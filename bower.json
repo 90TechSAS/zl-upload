@@ -1,0 +1,16 @@
+{
+  "name": "zl-upload",
+  "description": "Lightweight Angularjs directive to upload files",
+  "main": "app.js",
+  "authors": [
+    "Renaud ROHLINGER"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/90TechSAS/zl-upload",
+  "moduleType": [],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules"
+  ]
+}
