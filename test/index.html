@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html ng-app="demo">
+<head>
+	<title>90techSASAngular-zlUpload</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+</head>
+<style type="text/css">
+	.progress-bar {
+	  width: 120px;
+	  height: 18px;
+	  border-style: solid;
+	  border-width: 1px;
+	  background-color: rgba(100,50,100,.60);
+	  border-color: #aaa;  
+	}
+
+	.progress-bar-bar {
+	  width: 0px;
+	  background-color: rgb(100,50,100);
+	  height: 100%;
+	  color: #fff;
+	  font-weight: normal
+	}
+</style>
+<body>
+<zl-upload-drag-and-drop to="upload.php" multiple></zl-upload-drag-and-drop>
+<zl-upload to="upload.php"></zl-upload>
+
+
+  	<zl-progress-bar cur-val='10'></zl-progress-bar>
+
+	<script src="../bower_components/angular/angular.js"></script>
+	<script src="../bower_components/lodash/lodash.js"></script>
+	<script src="../build/app.js"></script>
+	<script>
+	  var demo = angular.module("demo",['90Tech.zlUpload']);
+	  
+	</script>  
+</body>
+</html>

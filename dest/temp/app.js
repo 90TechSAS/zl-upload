@@ -1,7 +1,13 @@
+'use strict';
 
-import CommonDirective from './src/app/directives/common.directive';
-import CommonController from './src/app/controllers/common.controller';
+// istanbul ignore next
 
-var module = angular.module('90Tech.zlUpload', ['ui.router']).config(function ($urlRouterProvider) {
-    $urlRouterProvider.otherwise("/home");
-});
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _servicesUploadService = require('./services/upload.service');
+
+var _servicesUploadService2 = _interopRequireDefault(_servicesUploadService);
+
+var _directivesUploadDirective = require('./directives/upload.directive');
+
+var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirective);
