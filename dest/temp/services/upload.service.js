@@ -13,10 +13,12 @@
     function zlUploadService($http, $q) {
         var vm = this;
         var url = '';
-        //
+        // Array File Management TODO
+        var ArrayFiles = [];
+
+        // Preview mode | Delete ?
         function readFile(file) {
             /* var deferred = $q.defer();
-             // Html5 object allowing to read asynchronously multiples files 
              var read = new FileReader()
                  read.onload = function(e) {
                      deferred.resolve(e.target.result);
@@ -24,9 +26,8 @@
                  read.onerror = function(e) {
                      deferred.reject(e);
                  }
-               // if image = FileReader.readAsDataURL()
-             read.result(file);
-             return deferred.promise;*/
+               read.result(file);
+                 return deferred.promise;*/
             return file;
         };
 
@@ -49,6 +50,7 @@
         function addFile() {};
 
         function deleteFile() {};
+
         function setUrl(url) {
             vm.url = url;
         };

@@ -33,20 +33,25 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
     function zlUpload($q, zlUploadService) {
         return {
             restrict: 'E',
-            replace: true,
-            template: '<input file-input="files" type="file" accept="*" multiple />',
+            transclude: true,
+            template: function template(element) {
+                var multiple = element[0].hasAttribute('multiple') ? 'multiple' : '';
+                var dragndrop = element[0].hasAttribute('dragndrop') ? '<zl-upload-drag-and-drop></zl-upload-drag-and-drop>' : '<input type="file" accept="*" ' + multiple + '/>';
+                var autosubmit = element[0].hasAttribute('autosubmit') ? '' : '<button id="submit_files">Upload</button>';
+                var htmlText = dragndrop + autosubmit;
+
+                return htmlText;
+            },
             link: function link(scope, element, attrs, ngModel) {
                 var slice = Array.prototype.slice;
-                var url = attrs.to;
-
-                // stop if nothing
-                //if (!ngModel) return;
+                zlUploadService.setUrl(attrs.to);
 
                 // on change event listener
+
                 element.bind('change', function () {
 
-                    var e = element[0].files;
-                    if (!e) return;
+                    var e = element[0].children[0].files;
+
                     /*  Wait all files to be read then do stuff 
                       1 - convert Filelist object to an array of file with call( [File][File][File])
                       2 - then call the readFile method of the zlUpload service 
@@ -70,7 +75,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
             template: '<div class="asset-upload">Drag here to upload</div>',
             link: function link(scope, element, attrs) {
                 var slice = Array.prototype.slice;
-                zlUploadService.setUrl(attrs.to);
+
                 element.on('dragover', function (e) {
 
                     e.preventDefault();
@@ -86,6 +91,9 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
                     e.preventDefault();
                     e.stopPropagation();
 
+                    if (element[0].hasAttribute('multiple')) {
+                        console.log('multiple upload');
+                    } else {}
                     /*  Wait all files to be read then do stuff 
                       1 - convert Filelist object to an array of file with call( [File][File][File])
                       2 - then call the readFile method of the zlUpload service 
@@ -107,18 +115,14 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
         return {
             restrict: 'E',
-            scope: {
-                curVal: '@'
-            },
             template: "<div class='progress-bar'>" + "<div class='progress-bar-bar'></div>" + "</div>",
 
             link: function link($scope, element, attrs) {
 
                 function updateProgress() {
                     var progress = 0;
-                    if ($scope.curVal) {
-                        progress = Math.min($scope.curVal, 100);
-                    }
+                    progress = Math.min(10, 100);
+
                     document.getElementsByClassName('progress-bar-bar')[0].style.width = progress + "%";
                 }
                 $scope.$watch('curVal', updateProgress);
@@ -143,10 +147,12 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
     function zlUploadService($http, $q) {
         var vm = this;
         var url = '';
-        //
+        // Array File Management TODO
+        var ArrayFiles = [];
+
+        // Preview mode | Delete ?
         function readFile(file) {
             /* var deferred = $q.defer();
-             // Html5 object allowing to read asynchronously multiples files 
              var read = new FileReader()
                  read.onload = function(e) {
                      deferred.resolve(e.target.result);
@@ -154,9 +160,8 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
                  read.onerror = function(e) {
                      deferred.reject(e);
                  }
-               // if image = FileReader.readAsDataURL()
-             read.result(file);
-             return deferred.promise;*/
+               read.result(file);
+                 return deferred.promise;*/
             return file;
         };
 
@@ -179,6 +184,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         function addFile() {};
 
         function deleteFile() {};
+
         function setUrl(url) {
             vm.url = url;
         };

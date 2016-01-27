@@ -16,18 +16,25 @@
         function zlUpload($q,zlUploadService){    
             return {
                 restrict: 'E',
-                scope: false,
-                replace: true,
-                template: '<input type="file" accept="*" {{multiple}} />',
-              link : function(scope, element, attrs, ngModel) {
+                transclude: true,
+                template: function(element){
+                    var multiple = element[0].hasAttribute('multiple') ? 'multiple' : '';
+                    var dragndrop = element[0].hasAttribute('dragndrop') ? '<zl-upload-drag-and-drop></zl-upload-drag-and-drop>' : '<input type="file" accept="*" '+multiple+'/>';
+                    var autosubmit = element[0].hasAttribute('autosubmit') ? '' : '<button id="submit_files">Upload</button>';
+                    var htmlText = dragndrop+autosubmit;
+                    
+                    return htmlText;
+                },
+                link : function(scope, element, attrs, ngModel) {
                     var slice = Array.prototype.slice;
-                    var url = attrs.to;
+                    zlUploadService.setUrl(attrs.to);
 
                     // on change event listener
+                    
                     element.bind('change', function() {
 
-                        var e = element[0].files;
-                        if(!e) return;
+                        var e = element[0].children[0].files;
+                        
                         /*  Wait all files to be read then do stuff 
                           1 - convert Filelist object to an array of file with call( [File][File][File])
                           2 - then call the readFile method of the zlUpload service 
@@ -43,7 +50,7 @@
 
                     
                     }); //change
-              } // link
+                } // link
             }; // return
          };
 
@@ -57,9 +64,7 @@
                 template: '<div class="asset-upload">Drag here to upload</div>',
                 link: function(scope, element, attrs) {
                     var slice = Array.prototype.slice;
-                    var url = attrs.to;
 
-                    zlUploadService.setUrl(attrs.to);
                     element.on('dragover', function(e) {
 
                         e.preventDefault();
@@ -75,6 +80,11 @@
                         e.preventDefault();
                         e.stopPropagation();
 
+                        if(element[0].hasAttribute('multiple')){
+                                console.log('multiple upload');
+                        }else{
+
+                        }
                         /*  Wait all files to be read then do stuff 
                           1 - convert Filelist object to an array of file with call( [File][File][File])
                           2 - then call the readFile method of the zlUpload service 
@@ -84,7 +94,6 @@
                         $q.all(slice.call(e.dataTransfer.files).map(zlUploadService.uploadFile))
                             .then(function() {
                         });
-
                    
                         return false;
                         }
