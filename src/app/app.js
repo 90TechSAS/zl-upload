@@ -1,2 +1,6 @@
+import zUpload from './upload.config';
 import zlUploadService from './services/upload.service';
-import zlUpload from './directives/upload.directive';
+import zlUploadDirective from './directives/upload.directive';
+
+
+

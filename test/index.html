@@ -4,30 +4,68 @@
 	<title>90techSASAngular-zlUpload</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<link href='https://fonts.googleapis.com/css?family=Roboto:300,400' rel='stylesheet' type='text/css'>
 </head>
 <style type="text/css">
+	/*	all */
+	body, button{
+		font-family:"Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	}
+	/* progressbar style */
 	.progress-bar {
-	  width: 120px;
-	  height: 18px;
+	  height: 20px;
 	  border-style: solid;
 	  border-width: 1px;
-	  background-color: rgba(100,50,100,.60);
-	  border-color: #aaa;  
+	  background-color: #B6B6B6;
+	  border-color: #aaa; 
+	  margin: 10px 0px 0px 0px;
 	}
 
 	.progress-bar-bar {
 	  width: 0px;
-	  background-color: rgb(100,50,100);
+	  background-color: #F5F5F5;
 	  height: 100%;
-	  color: #fff;
-	  font-weight: normal
+      color:#F5F5F5;
+	  font-weight: normal;
+	}
+
+	.div-file-container {
+		background: #9E9E9E;
+	    color:#F5F5F5;
+	    font-size: 1.5rem;
+	    width: 40vw;
+	    margin:0 auto;
+	    text-align: center;
+	    padding: 25px;
+	}
+	/* drop style */
+	.drop-div {
+    outline: 2px dashed #F5F5F5;
+    outline-offset: -10px;
+    -webkit-transition: outline-offset .30s ease-in-out, background-color .30s linear;
+    transition: outline-offset .30s ease-in-out, background-color .30s linear;
+	}
+	.dragover {
+	    border: 5px dashed blue;
+	}
+	/* submit button */
+	.submit-file {
+		background-color:#616161;
+    	color:#F5F5F5;
+		box-shadow:0 3px 10px rgba(0,0,0,0.23),0 3px 10px rgba(0,0,0,0.16);
+		padding:6px;
+		border:none;
+		text-transform: uppercase;
+		font-size: 1rem;
+		width:20vw;
+		margin:0 auto;
 	}
 </style>
 <body>
 
-<!-- 	<zl-upload-drag-and-drop to="upload.php" multiple></zl-upload-drag-and-drop>
- -->	
- 	<zl-upload to="upload.php" dragndrop multiple autosubmit></zl-upload>
+
+ 	<zl-upload to="upload.php" multiple></zl-upload>
+
 <!--   	<zl-progress-bar cur-val='10'></zl-progress-bar>
  -->
 	<script src="../bower_components/angular/angular.js"></script>
@@ -35,7 +73,6 @@
 	<script src="../build/app.js"></script>
 	<script>
 	  var demo = angular.module("demo",['90Tech.zlUpload']);
-	  
 	</script>  
 </body>
 </html>

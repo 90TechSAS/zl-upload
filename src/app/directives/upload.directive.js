@@ -11,60 +11,39 @@
         .module('90Tech.zlUpload')
         .directive('zlUpload', zlUpload);
 
-        zlUpload.$inject = ['$q','zlUploadService'];
+        zlUpload.$inject = ['zlUploadService'];
 
-        function zlUpload($q,zlUploadService){    
+        function zlUpload(zlUploadService){    
             return {
                 restrict: 'E',
                 transclude: true,
                 template: function(element){
-                    var multiple = element[0].hasAttribute('multiple') ? 'multiple' : '';
-                    var dragndrop = element[0].hasAttribute('dragndrop') ? '<zl-upload-drag-and-drop></zl-upload-drag-and-drop>' : '<input type="file" accept="*" '+multiple+'/>';
-                    var autosubmit = element[0].hasAttribute('autosubmit') ? '' : '<button id="submit_files">Upload</button>';
-                    var htmlText = dragndrop+autosubmit;
-                    
-                    return htmlText;
+                    var uploadMethod = element[0].hasAttribute('dragndrop') ? '<zl-upload-drag-and-drop></zl-upload-drag-and-drop>' : '<zl-upload-file></zl-upload-file>';
+                    return uploadMethod;
                 },
                 link : function(scope, element, attrs, ngModel) {
-                    var slice = Array.prototype.slice;
+                    // Set url to upload
                     zlUploadService.setUrl(attrs.to);
 
-                    // on change event listener
-                    
-                    element.bind('change', function() {
-
-                        var e = element[0].children[0].files;
-                        
-                        /*  Wait all files to be read then do stuff 
-                          1 - convert Filelist object to an array of file with call( [File][File][File])
-                          2 - then call the readFile method of the zlUpload service 
-                          for each element of converted array with map([zlUploadService.readFile(File)][zlUploadService.readFile(File)]) 
-                        */
-                        if (e){
-                        $q.all(slice.call(e).map(zlUploadService.uploadFile))
-                            .then(function() {
-                        });
-
-                        return false;
-                        }
-
-                    
-                    }); //change
                 } // link
             }; // return
          };
 
+    zlUploadDragAndDrop.$inject = ['zlUploadService'];
+
     angular
         .module('90Tech.zlUpload')
         .directive('zlUploadDragAndDrop', zlUploadDragAndDrop);
-        function zlUploadDragAndDrop($http,$q,zlUploadService){    
+        function zlUploadDragAndDrop(zlUploadService){    
             return {
                 restrict: 'E',
                 replace: true,
-                template: '<div class="asset-upload">Drag here to upload</div>',
+                template: function(element){
+                    var autosubmit = element.parent()[0].hasAttribute('autosubmit') ? '' : '<button class="submit-file">Upload</button>';
+                    var htmlText = '<div class="div-file-container drop-div"><p>Drag your files here to upload</p> '+autosubmit+'<zl-progress-bar></zl-progress-bar></div>';
+                    return htmlText;
+                },
                 link: function(scope, element, attrs) {
-                    var slice = Array.prototype.slice;
-
                     element.on('dragover', function(e) {
 
                         e.preventDefault();
@@ -80,34 +59,61 @@
                         e.preventDefault();
                         e.stopPropagation();
 
-                        if(element[0].hasAttribute('multiple')){
+                        // Multiple files condition
+                        if(element.parent()[0].hasAttribute('multiple')){
                                 console.log('multiple upload');
                         }else{
 
                         }
-                        /*  Wait all files to be read then do stuff 
-                          1 - convert Filelist object to an array of file with call( [File][File][File])
-                          2 - then call the readFile method of the zlUpload service 
-                          for each element of converted array with map([zlUploadService.readFile(File)][zlUploadService.readFile(File)]) 
-                        */
-                        if (e.dataTransfer){
-                        $q.all(slice.call(e.dataTransfer.files).map(zlUploadService.uploadFile))
-                            .then(function() {
-                        });
-                   
-                        return false;
+
+                        if (e){
+                        // start upload upload->UploadFile
+                        zlUploadService.upload(e.dataTransfer.files);
                         }
+
                     });
                 }
             };
         };
+
+    angular
+        .module('90Tech.zlUpload')
+        .directive('zlUploadFile', zlUploadFile);
+        function zlUploadFile(zlUploadService){    
+            return {
+                restrict: 'E',
+                replace: true,
+                template: function(element){
+                    var multiple = element.parent()[0].hasAttribute('multiple') ? 'multiple' : '';
+                    var autosubmit = element.parent()[0].hasAttribute('autosubmit') ? '' : '<button class="submit-file">Upload</button>';
+                    var htmlText = '<div class="div-file-container"><p><input type="file" accept="*" '+multiple+'/></p>'+autosubmit+'<zl-progress-bar></zl-progress-bar></div>';
+                    return htmlText;
+                },
+                link: function(scope, element, attrs) {
+
+
+                    // on change event listener
+                    element.bind('change', function() {
+                        var e = element.find('input')[0].files;
+                        
+                        if (e){
+                        // start upload upload->UploadFile
+                        zlUploadService.upload(e);
+                        }
+                    
+                    }); //change
+
+                }
+            };
+        };
+
 
 
     angular
         .module('90Tech.zlUpload')
         .directive('zlProgressBar', zlProgressBar);
 
-        function zlProgressBar($q){    
+        function zlProgressBar($q,zlUploadService){    
 
             return {
               restrict: 'E',
@@ -116,14 +122,12 @@
                         "</div>",    
 
               link: function ($scope, element, attrs) {
-                
-                function updateProgress() {
-                  var progress = 0;
-                    progress = Math.min(10, 100);
-
+       /*         var progress = zlUploadService.getProgressStatus();
+                function updateProgress(progress) {
                    document.getElementsByClassName('progress-bar-bar')[0].style.width = progress+"%";
                 }
-                $scope.$watch('curVal', updateProgress);
+                $scope.$watch(progress, updateProgress(progress));*/
+            
               }
             };  
         };
