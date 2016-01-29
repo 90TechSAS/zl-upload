@@ -26,115 +26,123 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
 (function () {
 
-    'use strict';
+  'use strict';
 
-    zlUploadFile.$inject = ["zlUploadService"];
-    zlProgressBar.$inject = ["$q", "zlUploadService"];
-    angular.module('90Tech.zlUpload').directive('zlUpload', zlUpload);
+  zlUploadFile.$inject = ["zlUploadService"];
+  zlProgressBar.$inject = ["$q", "zlUploadService"];
+  angular.module('90Tech.zlUpload').directive('zlUpload', zlUpload);
 
-    zlUpload.$inject = ['zlUploadService'];
+  zlUpload.$inject = ['zlUploadService'];
 
-    function zlUpload(zlUploadService) {
-        return {
-            restrict: 'E',
-            transclude: true,
-            template: function template(element) {
-                var uploadMethod = element[0].hasAttribute('dragndrop') ? '<zl-upload-drag-and-drop></zl-upload-drag-and-drop>' : '<zl-upload-file></zl-upload-file>';
-                return uploadMethod;
-            },
-            link: function link(scope, element, attrs, ngModel) {
-                // Set url to upload
-                zlUploadService.setUrl(attrs.to);
-            } // link
-        }; // return
+  function zlUpload(zlUploadService) {
+    return {
+      restrict: 'E',
+      transclude: true,
+      template: function template(element) {
+        var uploadMethod = element[0].hasAttribute('dragndrop') ? '<zl-upload-drag-and-drop></zl-upload-drag-and-drop>' : '<zl-upload-file></zl-upload-file>';
+        return uploadMethod;
+      },
+      link: function link(scope, element, attrs, ngModel) {
+        // Set url to upload
+        zlUploadService.setUrl(attrs.to);
+      } // link
+    }; // return
+  };
+
+  zlUploadDragAndDrop.$inject = ['zlUploadService'];
+
+  angular.module('90Tech.zlUpload').directive('zlUploadDragAndDrop', zlUploadDragAndDrop);
+
+  function zlUploadDragAndDrop(zlUploadService) {
+    return {
+      restrict: 'E',
+      replace: true,
+      template: function template(element) {
+        var autosubmit = element.parent()[0].hasAttribute('autosubmit') ? '' : '<button class="submit-file">Upload</button>';
+        var htmlText = '<div class="div-file-container drop-div"><p>Drag your files here to upload</p> ' + autosubmit + '<zl-progress-bar></zl-progress-bar></div>';
+        return htmlText;
+      },
+      link: function link(scope, element, attrs) {
+        element.on('dragover', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        element.on('dragenter', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        element.on('drop', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          // Multiple files condition
+          if (element.parent()[0].hasAttribute('multiple')) {
+            console.log('multiple upload');
+          } else {}
+          if (e) {
+            // start upload upload->UploadFile
+            zlUploadService.upload(e.dataTransfer.files, function (complete) {
+              console.log({ percentDone: complete });
+            }).then(function (data) {
+              //scope.onDone({files: ret.files, data: ret.data});
+              console.log(data);
+            }, function (error) {
+              //scope.onError({files: scope.files, type: 'UPLOAD_ERROR', msg: error});
+              console.log(error);
+            }, function (progress) {
+              console.log({ percentDone: progress });
+              console.log(progress);
+            });
+          }
+        });
+      }
     };
+  }
 
-    zlUploadDragAndDrop.$inject = ['zlUploadService'];
+  angular.module('90Tech.zlUpload').directive('zlUploadFile', zlUploadFile);
 
-    angular.module('90Tech.zlUpload').directive('zlUploadDragAndDrop', zlUploadDragAndDrop);
-    function zlUploadDragAndDrop(zlUploadService) {
-        return {
-            restrict: 'E',
-            replace: true,
-            template: function template(element) {
-                var autosubmit = element.parent()[0].hasAttribute('autosubmit') ? '' : '<button class="submit-file">Upload</button>';
-                var htmlText = '<div class="div-file-container drop-div"><p>Drag your files here to upload</p> ' + autosubmit + '<zl-progress-bar></zl-progress-bar></div>';
-                return htmlText;
-            },
-            link: function link(scope, element, attrs) {
-                element.on('dragover', function (e) {
-
-                    e.preventDefault();
-                    e.stopPropagation();
-                });
-                element.on('dragenter', function (e) {
-
-                    e.preventDefault();
-                    e.stopPropagation();
-                });
-                element.on('drop', function (e) {
-
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    // Multiple files condition
-                    if (element.parent()[0].hasAttribute('multiple')) {
-                        console.log('multiple upload');
-                    } else {}
-
-                    if (e) {
-                        // start upload upload->UploadFile
-                        zlUploadService.upload(e.dataTransfer.files);
-                    }
-                });
-            }
-        };
+  function zlUploadFile(zlUploadService) {
+    return {
+      restrict: 'E',
+      replace: true,
+      template: function template(element) {
+        var multiple = element.parent()[0].hasAttribute('multiple') ? 'multiple' : '';
+        var autosubmit = element.parent()[0].hasAttribute('autosubmit') ? '' : '<button class="submit-file">Upload</button>';
+        var htmlText = '<div class="div-file-container"><p><input type="file" accept="*" ' + multiple + '/></p>' + autosubmit + '<zl-progress-bar></zl-progress-bar></div>';
+        return htmlText;
+      },
+      link: function link(scope, element, attrs) {
+        // on change event listener
+        element.bind('change', function () {
+          var e = element.find('input')[0].files;
+          if (e) {
+            // start upload upload->UploadFile
+            zlUploadService.upload(e, function (complete) {
+              console.log(complete);
+            });
+          }
+        }); //change
+      }
     };
+  }
 
-    angular.module('90Tech.zlUpload').directive('zlUploadFile', zlUploadFile);
-    function zlUploadFile(zlUploadService) {
-        return {
-            restrict: 'E',
-            replace: true,
-            template: function template(element) {
-                var multiple = element.parent()[0].hasAttribute('multiple') ? 'multiple' : '';
-                var autosubmit = element.parent()[0].hasAttribute('autosubmit') ? '' : '<button class="submit-file">Upload</button>';
-                var htmlText = '<div class="div-file-container"><p><input type="file" accept="*" ' + multiple + '/></p>' + autosubmit + '<zl-progress-bar></zl-progress-bar></div>';
-                return htmlText;
-            },
-            link: function link(scope, element, attrs) {
+  angular.module('90Tech.zlUpload').directive('zlProgressBar', zlProgressBar);
 
-                // on change event listener
-                element.bind('change', function () {
-                    var e = element.find('input')[0].files;
-
-                    if (e) {
-                        // start upload upload->UploadFile
-                        zlUploadService.upload(e);
-                    }
-                }); //change
-            }
-        };
+  function zlProgressBar($q, zlUploadService) {
+    return {
+      restrict: 'E',
+      template: "<div class='progress-bar'><div class='progress-bar-bar'></div><div>",
+      link: function link($scope, element, attrs) {
+        // on upload progression, update progressionBar view
+        $scope.$on('handleUploadBroadcast', function (e, progress) {
+          updateProgress(progress);
+        });
+        function updateProgress(progress) {
+          console.log(progress);
+          document.getElementsByClassName('progress-bar-bar')[0].style.width = progress + "%";
+        }
+      }
     };
-
-    angular.module('90Tech.zlUpload').directive('zlProgressBar', zlProgressBar);
-
-    function zlProgressBar($q, zlUploadService) {
-
-        return {
-            restrict: 'E',
-            template: "<div class='progress-bar'>" + "<div class='progress-bar-bar'></div>" + "</div>",
-
-            link: function link($scope, element, attrs) {
-                /*         var progress = zlUploadService.getProgressStatus();
-                         function updateProgress(progress) {
-                            document.getElementsByClassName('progress-bar-bar')[0].style.width = progress+"%";
-                         }
-                         $scope.$watch(progress, updateProgress(progress));*/
-
-            }
-        };
-    };
+  }
 })();
 },{}],3:[function(require,module,exports){
 /**
@@ -145,133 +153,140 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 'use strict';
 
 (function () {
-    'use strict';
+  'use strict';
+
+  /**
+   * @ngdoc service
+   * @name 90Tech.zlUpload:zlUploadService
+   * @description
+   * # zlUploadService
+   * Upload service
+   *
+  */
+  zlUploadService.$inject = ["$http", "$q", "$rootScope"];
+  angular.module('90Tech.zlUpload').service('zlUploadService', zlUploadService);
+
+  function zlUploadService($http, $q, $rootScope) {
+    var vm = this;
+    var url = '';
+    // Array File Management TODO
+    var ArrayFiles = [];
 
     /**
      * @ngdoc service
-     * @name 90Tech.zlUpload:zlUploadService
-     * @description
-     * # zlUploadService
-     * Upload service
-     *
+     * @name zlUploadService#upload
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @param {Filelist} The Filelist that will be upload
+     * @description Manipulate Filelist to prepare for upload
     */
-    zlUploadService.$inject = ["$http", "$q", "$rootScope"];
-    angular.module('90Tech.zlUpload').service('zlUploadService', zlUploadService);
-
-    function zlUploadService($http, $q, $rootScope) {
-        var vm = this;
-        var url = '';
-        // Array File Management TODO
-        var ArrayFiles = [];
-
-        // Preview mode | Delete ?
-        function readFile(file) {
-            /* var deferred = $q.defer();
-             var read = new FileReader()
-                 read.onload = function(e) {
-                     deferred.resolve(e.target.result);
-                 }
-                 read.onerror = function(e) {
-                     deferred.reject(e);
-                 }
-               read.result(file);
-             return deferred.promise;*/
-            return file;
-        };
-
-        /**
-         * @ngdoc service
-         * @name zlUploadService#uploadFile
-         * @methodOf 90Tech.zlUpload:zlUploadService
-         * @param {File} The file to upload
-         * @description Upload File method
-        */
-        function uploadFile(files) {
-
-            var data = new FormData(),
-                xhr = new XMLHttpRequest();
-            data.append("files", files);
-            /*
-                                $http.post(vm.url,data,{
-                                    withCredentials: true,
-                                    headers: {
-                                        // custom header while waiting AngularJs to make $xhrFactory service (soon)
-                                        __XHR__: function() {
-                                            return function(xhr) {
-                                                xhr.upload.addEventListener("progress", function(event) {
-                                                    setProgressStatus((event.loaded/event.total) * 100);
-                                                    vm.progressStatus = (event.loaded/event.total) * 100;
-                                                    $rootScope.$apply();
-                                                });
-                                            };
-                                        },
-                                    },
-                                    transformRequest: angular.identity
-                                }).success(function() {
-                                    console.log("Uploaded");
-                                }).error(function() {
-                                    console.log("Error");
-                                });*/
-            xhr.onloadstart = function () {
-                console.log('Factory: upload started: ');
-            };
-
-            // When the request has failed.
-            xhr.onerror = function (e) {};
-
-            // Send to server, where we can then access it with $_FILES['file].
-            xhr.open('POST', vm.url);
-            xhr.send(data);
-        };
-
-        /**
-         * @ngdoc service
-         * @name zlUploadService#upload
-         * @methodOf 90Tech.zlUpload:zlUploadService
-         * @param {Filelist} The Filelist that will be upload
-         * @description Manipulate Filelist to prepare for upload
-        */
-        function upload(e) {
-
-            var slice = Array.prototype.slice;
-            /*  Wait all files to be read then do stuff 
-              1 - convert Filelist object to an array of file with call( [File][File][File])
-              2 - then call the readFile method of the zlUpload service 
-              for each element of converted array with map([zlUploadService.uploadFile(File)][zlUploadService.uploadFile(File)]) 
-            */
-            $q.all(slice.call(e).map(uploadFile)).then(function () {});
-        }
-
-        function addFile() {};
-
-        function deleteFile() {};
-
-        /**
-         * @ngdoc service
-         * @name zlUploadService#setUrl
-         * @methodOf 90Tech.zlUpload:zlUploadService
-         * @param {String} The Url use to upload
-         * @description Setter of the upload's url
-        */
-        function setUrl(url) {
-            vm.url = url;
-        };
-
-        /**
-         * @ngdoc service
-         * @name zlUploadService#getUrl
-         * @methodOf 90Tech.zlUpload:zlUploadService
-         * @description Getter of the upload's url
-        */
-        function getUrl() {
-            return vm.url;
-        };
-
-        _.assign(vm, {
-            upload: upload,
-            setUrl: setUrl
-        });
+    function upload(e) {
+      var slice = Array.prototype.slice;
+      /*  Wait all files to be read then do stuff 
+        1 - convert Filelist object to an array of file with call( [File][File][File])
+        2 - then call the readFile method of the zlUpload service 
+        for each element of converted array with map([zlUploadService.uploadFile(File)][zlUploadService.uploadFile(File)]) 
+      */
+      $q.all(slice.call(e).map(uploadFile)).then(function () {});
     }
+
+    /**
+     * @ngdoc service
+     * @name zlUploadService#uploadFile
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @param {File} The file to upload
+     * @description Upload File method
+    */
+    function uploadFile(files, progressCb) {
+
+      var xhr = new XMLHttpRequest();
+      var deferred = $q.defer();
+      console.log('start upload file');
+
+      xhr.upload.onprogress = function (e) {
+        var percentCompleted;
+        if (e.lengthComputable) {
+          percentCompleted = Math.round(e.loaded / e.total * 100);
+          broadCastUploadProgress(percentCompleted);
+        }
+      };
+
+      xhr.onload = function (e) {
+        console.log('Your file has been uploaded successfully !');
+      };
+
+      xhr.upload.onerror = function (e) {
+        console.log('error');
+        var msg = xhr.responseText ? xhr.responseText : "An unknown error occurred posting to '" + vm.url + "'";
+        $rootScope.$apply(function () {
+          deferred.reject(msg);
+        });
+      };
+
+      var data = new FormData();
+
+      if (data) {
+        data.append("files", files);
+      }
+      xhr.open("POST", vm.url);
+      xhr.send(data);
+      return deferred.promise;
+    };
+
+    function addFile() {};
+
+    function deleteFile() {};
+
+    // Preview mode | Delete ?
+    function readFile(file) {
+      /* var deferred = $q.defer();
+      var read = new FileReader()
+          read.onload = function(e) {
+              deferred.resolve(e.target.result);
+          }
+          read.onerror = function(e) {
+              deferred.reject(e);
+          }
+        read.result(file);
+      return deferred.promise;*/
+    };
+
+    /**
+     * @ngdoc service
+     * @name zlUploadService#broadCastUploadProgress
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @param {Int} The % of the upload progression
+     * @description Update upload progression broadcast to progressBar Directive
+    */
+    function broadCastUploadProgress(uploadProgression) {
+      $rootScope.$broadcast('handleUploadBroadcast', uploadProgression);
+    };
+
+    /**
+     * @ngdoc service
+     * @name zlUploadService#setUrl
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @param {String} The Url use to upload
+     * @description Setter of the upload's url
+    */
+    function setUrl(url) {
+      vm.url = url;
+    };
+
+    /**
+     * @ngdoc service
+     * @name zlUploadService#getUrl
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @description Getter of the upload's url
+    */
+    function getUrl() {
+      return vm.url;
+    };
+
+    _.assign(vm, {
+      upload: upload,
+      setUrl: setUrl
+    });
+  }
 })();
 },{}],4:[function(require,module,exports){
 "use strict";
