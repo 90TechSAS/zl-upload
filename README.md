@@ -14,4 +14,10 @@ Here an example on how to use a simple fileupload :
 
 ...
 **TODO :**
-todo.md, progressbar, array file management, retryer, cancel, gh-pages instead of test folder.
+ - todo.md
+ - progressbar
+ - array file management?
+ - retryer
+ - cancel
+ - attributeGetter method in directive instead of element[0]
+ -  gh-pages instead of test folder.
