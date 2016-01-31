@@ -165,10 +165,8 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         // on upload progression, update progressionBar view
         $scope.$on('handleUploadState', function (e, showListener) {
           $scope.showCancelButton = showListener;
-          $scope.$apply();
-
           // need to update view
-          console.log($scope.showCancelButton);
+          $scope.$apply();
         });
 
         // cancel upload button listener
@@ -216,18 +214,19 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
      * @description Manipulate Filelist to prepare for upload
     */
     function upload(e) {
+
+      // show cancel button & others stuffs
+      broadCastUploadState(true);
+
       var slice = Array.prototype.slice;
       /*  Wait all files to be read then do stuff 
         1 - convert Filelist object to an array of file with call( [File][File][File])
         2 - then call the readFile method of the zlUpload service 
         for each element of converted array with map([zlUploadService.uploadFile(File)][zlUploadService.uploadFile(File)]) 
       */
+      var arrayUpload = slice.call(e).map(uploadFile);
 
-      // show cancel button & others stuffs
-      broadCastUploadState(true);
-
-      $q.all(slice.call(e).map(uploadFile)).then(function () {
-        console.log('all files uploaded');
+      $q.all(arrayUpload).then(function (data) {
         // hide cancel button & others stuffs
         $timeout(function () {
           broadCastUploadState(false);
@@ -257,15 +256,13 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       };
 
       xhr.onload = function (e) {
-        console.log('Your file has been uploaded successfully !');
+        deferred.resolve(xhr.responseText);
       };
 
       xhr.upload.onerror = function (e) {
         console.log('error');
         var msg = xhr.responseText ? xhr.responseText : "An unknown error occurred posting to '" + vm.url + "'";
-        $rootScope.$apply(function () {
-          deferred.reject(msg);
-        });
+        deferred.reject(msg);
       };
 
       var data = new FormData();

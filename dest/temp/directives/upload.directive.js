@@ -143,10 +143,8 @@
         // on upload progression, update progressionBar view
         $scope.$on('handleUploadState', function (e, showListener) {
           $scope.showCancelButton = showListener;
-          $scope.$apply();
-
           // need to update view
-          console.log($scope.showCancelButton);
+          $scope.$apply();
         });
 
         // cancel upload button listener
