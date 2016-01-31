@@ -109,16 +109,50 @@
   function zlProgressBar($q, zlUploadService) {
     return {
       restrict: 'E',
-      template: "<div class='progress-bar'><div class='progress-bar-bar'></div><div>",
+      template: "<div class='progress-bar'><div class='progress-bar-bar'></div><zl-cancel-button></zl-cancel-button><div>",
       link: function link($scope, element, attrs) {
+
         // on upload progression, update progressionBar view
         $scope.$on('handleUploadBroadcast', function (e, progress) {
           updateProgress(progress);
+          console.log(progress);
         });
         function updateProgress(progress) {
-          console.log(progress);
           document.getElementsByClassName('progress-bar-bar')[0].style.width = progress + "%";
         }
+      }
+    };
+  }
+
+  angular.module('90Tech.zlUpload').directive('zlCancelButton', zlCancelButton);
+
+  function zlCancelButton($q, zlUploadService) {
+    return {
+      restrict: 'E',
+      scope: {
+        showCancelButton: '@',
+        uploadCancel: '&'
+
+      },
+      template: "<button ng-show='showCancelButton' ng-click='uploadCancel();'>{{showCancelButton}}</button>",
+      link: function link($scope, element, attrs) {
+
+        // by default, hide cancel button
+        $scope.showCancelButton = false;
+
+        // on upload progression, update progressionBar view
+        $scope.$on('handleUploadState', function (e, showListener) {
+          $scope.showCancelButton = showListener;
+          $scope.$apply();
+
+          // need to update view
+          console.log($scope.showCancelButton);
+        });
+
+        // cancel upload button listener
+        $scope.uploadCancel = function (cancelUpload) {
+          zlUploadService.uploadCancel();
+        };
       }
     };
   }

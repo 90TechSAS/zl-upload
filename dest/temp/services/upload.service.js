@@ -18,11 +18,12 @@
   */
   angular.module('90Tech.zlUpload').service('zlUploadService', zlUploadService);
 
-  function zlUploadService($http, $q, $rootScope) {
+  function zlUploadService($http, $q, $timeout, $rootScope) {
     var vm = this;
     var url = '';
     // Array File Management TODO
     var ArrayFiles = [];
+    var xhr = new XMLHttpRequest();
 
     /**
      * @ngdoc service
@@ -38,7 +39,17 @@
         2 - then call the readFile method of the zlUpload service 
         for each element of converted array with map([zlUploadService.uploadFile(File)][zlUploadService.uploadFile(File)]) 
       */
-      $q.all(slice.call(e).map(uploadFile)).then(function () {});
+
+      // show cancel button & others stuffs
+      broadCastUploadState(true);
+
+      $q.all(slice.call(e).map(uploadFile)).then(function () {
+        console.log('all files uploaded');
+        // hide cancel button & others stuffs
+        $timeout(function () {
+          broadCastUploadState(false);
+        });
+      });
     }
 
     /**
@@ -50,7 +61,7 @@
     */
     function uploadFile(files, progressCb) {
 
-      var xhr = new XMLHttpRequest();
+      xhr = new XMLHttpRequest();
       var deferred = $q.defer();
       console.log('start upload file');
 
@@ -84,6 +95,17 @@
       return deferred.promise;
     };
 
+    /**
+     * @ngdoc service
+     * @name zlUploadService#uploadFile
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @description Cancel XMLHttpRequest
+    */
+    function uploadCancel() {
+      xhr.abort();
+      console.log('mission aborted');
+    }
+
     function addFile() {};
 
     function deleteFile() {};
@@ -115,6 +137,17 @@
 
     /**
      * @ngdoc service
+     * @name zlUploadService#broadCastStartingUpload
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @param {Bool} Boolean of progression div
+     * @description Notify the state of the upload
+    */
+    function broadCastUploadState(startUploadBoolean) {
+      $rootScope.$broadcast('handleUploadState', startUploadBoolean);
+    };
+
+    /**
+     * @ngdoc service
      * @name zlUploadService#setUrl
      * @methodOf 90Tech.zlUpload:zlUploadService
      * @param {String} The Url use to upload
@@ -136,7 +169,8 @@
 
     _.assign(vm, {
       upload: upload,
-      setUrl: setUrl
+      setUrl: setUrl,
+      uploadCancel: uploadCancel
     });
   }
 })();

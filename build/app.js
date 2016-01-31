@@ -30,6 +30,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
   zlUploadFile.$inject = ["zlUploadService"];
   zlProgressBar.$inject = ["$q", "zlUploadService"];
+  zlCancelButton.$inject = ["$q", "zlUploadService"];
   angular.module('90Tech.zlUpload').directive('zlUpload', zlUpload);
 
   zlUpload.$inject = ['zlUploadService'];
@@ -130,16 +131,50 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
   function zlProgressBar($q, zlUploadService) {
     return {
       restrict: 'E',
-      template: "<div class='progress-bar'><div class='progress-bar-bar'></div><div>",
+      template: "<div class='progress-bar'><div class='progress-bar-bar'></div><zl-cancel-button></zl-cancel-button><div>",
       link: function link($scope, element, attrs) {
+
         // on upload progression, update progressionBar view
         $scope.$on('handleUploadBroadcast', function (e, progress) {
           updateProgress(progress);
+          console.log(progress);
         });
         function updateProgress(progress) {
-          console.log(progress);
           document.getElementsByClassName('progress-bar-bar')[0].style.width = progress + "%";
         }
+      }
+    };
+  }
+
+  angular.module('90Tech.zlUpload').directive('zlCancelButton', zlCancelButton);
+
+  function zlCancelButton($q, zlUploadService) {
+    return {
+      restrict: 'E',
+      scope: {
+        showCancelButton: '@',
+        uploadCancel: '&'
+
+      },
+      template: "<button ng-show='showCancelButton' ng-click='uploadCancel();'>{{showCancelButton}}</button>",
+      link: function link($scope, element, attrs) {
+
+        // by default, hide cancel button
+        $scope.showCancelButton = false;
+
+        // on upload progression, update progressionBar view
+        $scope.$on('handleUploadState', function (e, showListener) {
+          $scope.showCancelButton = showListener;
+          $scope.$apply();
+
+          // need to update view
+          console.log($scope.showCancelButton);
+        });
+
+        // cancel upload button listener
+        $scope.uploadCancel = function (cancelUpload) {
+          zlUploadService.uploadCancel();
+        };
       }
     };
   }
@@ -163,14 +198,15 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
    * Upload service
    *
   */
-  zlUploadService.$inject = ["$http", "$q", "$rootScope"];
+  zlUploadService.$inject = ["$http", "$q", "$timeout", "$rootScope"];
   angular.module('90Tech.zlUpload').service('zlUploadService', zlUploadService);
 
-  function zlUploadService($http, $q, $rootScope) {
+  function zlUploadService($http, $q, $timeout, $rootScope) {
     var vm = this;
     var url = '';
     // Array File Management TODO
     var ArrayFiles = [];
+    var xhr = new XMLHttpRequest();
 
     /**
      * @ngdoc service
@@ -186,7 +222,17 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         2 - then call the readFile method of the zlUpload service 
         for each element of converted array with map([zlUploadService.uploadFile(File)][zlUploadService.uploadFile(File)]) 
       */
-      $q.all(slice.call(e).map(uploadFile)).then(function () {});
+
+      // show cancel button & others stuffs
+      broadCastUploadState(true);
+
+      $q.all(slice.call(e).map(uploadFile)).then(function () {
+        console.log('all files uploaded');
+        // hide cancel button & others stuffs
+        $timeout(function () {
+          broadCastUploadState(false);
+        });
+      });
     }
 
     /**
@@ -198,7 +244,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
     */
     function uploadFile(files, progressCb) {
 
-      var xhr = new XMLHttpRequest();
+      xhr = new XMLHttpRequest();
       var deferred = $q.defer();
       console.log('start upload file');
 
@@ -232,6 +278,17 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       return deferred.promise;
     };
 
+    /**
+     * @ngdoc service
+     * @name zlUploadService#uploadFile
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @description Cancel XMLHttpRequest
+    */
+    function uploadCancel() {
+      xhr.abort();
+      console.log('mission aborted');
+    }
+
     function addFile() {};
 
     function deleteFile() {};
@@ -263,6 +320,17 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
     /**
      * @ngdoc service
+     * @name zlUploadService#broadCastStartingUpload
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @param {Bool} Boolean of progression div
+     * @description Notify the state of the upload
+    */
+    function broadCastUploadState(startUploadBoolean) {
+      $rootScope.$broadcast('handleUploadState', startUploadBoolean);
+    };
+
+    /**
+     * @ngdoc service
      * @name zlUploadService#setUrl
      * @methodOf 90Tech.zlUpload:zlUploadService
      * @param {String} The Url use to upload
@@ -284,7 +352,8 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
     _.assign(vm, {
       upload: upload,
-      setUrl: setUrl
+      setUrl: setUrl,
+      uploadCancel: uploadCancel
     });
   }
 })();
