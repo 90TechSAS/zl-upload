@@ -18,9 +18,10 @@
     .module('90Tech.zlUpload')
     .service('zlUploadService', zlUploadService);
 
-    function zlUploadService($http,$q,$timeout,$rootScope,$compile) {
+    function zlUploadService($http,$q,$rootScope,$compile) {
       var vm = this;
       var url = '';
+      var files;
 
       /**
        * @ngdoc service
@@ -55,22 +56,23 @@
           });
 
           scope[valueProp] = $rootScope.filesInformations[key];
-          
+
           progressContainer.append($rootScope.filesInformations[key].progressdirective);
           $rootScope.filesInformations[key].cancel = true;
 
           // start upload deferred (get progress callback from deferred.notify)
           uploadFile(value,$rootScope.filesInformations[key].request)
             .then(function(done) {
-              $timeout(function(){
+
+              _.defer(function(){
                 $rootScope.filesInformations[key].progressdirective.remove();
-                $rootScope.filesInformations.splice(key, 1);
               });
+
             }, function(error) {
                 console.log(error);
             },  function(progress) {
-              // need to use timeout to ensure digest probs & then $apply() the var update to the view
-              $timeout(function(){
+
+              _.defer(function(){
                 $rootScope.filesInformations[key].progress = progress;
                 $rootScope.$apply();
               });
@@ -149,6 +151,28 @@
        * @methodOf 90Tech.zlUpload:zlUploadService
        * @description Getter of the upload's url
       */
+      function getFiles(){
+        return vm.files;
+      };
+
+
+      /**
+       * @ngdoc service
+       * @name zlUploadService#setUrl
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @param {String} The Url use to upload
+       * @description Setter of the upload's url
+      */
+      function setFiles(files){
+        vm.files = files;
+      };
+
+      /**
+       * @ngdoc service
+       * @name zlUploadService#getUrl
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @description Getter of the upload's url
+      */
       function getUrl(){
         return vm.url;
       };
@@ -156,6 +180,8 @@
       _.assign(vm, {
         uploadFile:uploadFile,
         upload:upload,
+        getFiles:getFiles,
+        setFiles:setFiles,
         setUrl:setUrl,
         uploadCancel:uploadCancel
       });
