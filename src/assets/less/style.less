@@ -1,0 +1,78 @@
+	/*	all */
+	body, button{
+		font-family:"Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	}
+
+	/* assets style */
+	.div-file-container button {
+		background-color:#607D8B;
+    	color:#F5F5F5;
+		box-shadow:0 1px 1px rgba(0,0,0,0.13),0 1px 1px rgba(0,0,0,0.16);
+		padding:6px;
+		border:none;
+		text-transform: uppercase;
+		font-size: 1rem;
+	}
+	/* submit button */
+	.submit-file {
+		width:20vw;
+		margin:0 auto;
+	}
+
+
+	/* progressbar style */
+	.progress-bar {
+	  border-style: solid;
+	  border-width: 1px;
+	  background-color: #FFFFFF;
+	  border-color: rgba(182, 182, 182, 0.6); 
+	  position:relative;
+	  height:30px;
+	}
+
+	.progress-bar-bar {
+	  width: 0px;
+	  background-color: rgba(33, 33, 33, 0.2);
+	  height: 100%;
+      position: absolute;
+      top: -30px;
+	}
+	#progress-state {
+		margin-top:0px;
+		line-height: 30px;
+	}
+	zl-cancel-button,zl-retry-button{
+		position:absolute;
+		right:0px;
+		top:0px;
+	}
+	#cancelUploadButton{
+		background-color:#FF5252;
+	}
+
+
+
+	/* container style */
+	.div-file-container {
+		background: #F5F5F5;
+	    color:#B6B6B6;
+	    font-size: 1.3rem;
+	    width: 40vw;
+	    margin:0 auto;
+	    text-align: center;
+	    padding: 25px;
+	}
+	.div-file-container div{
+    	margin-top: 30px;
+	}
+
+	/* drag & drop style */
+	.drop-div {
+    outline: 2px dashed #F5F5F5;
+    outline-offset: -10px;
+    -webkit-transition: outline-offset .30s ease-in-out, background-color .30s linear;
+    transition: outline-offset .30s ease-in-out, background-color .30s linear;
+	}
+	.dragover {
+	    border: 5px dashed blue;
+	}

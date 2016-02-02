@@ -31,7 +31,8 @@
     };
 
   zlUploadDragAndDrop.$inject = ['zlUploadService'];
-
+  
+  /* drag & drop upload file directive */
   angular
     .module('90Tech.zlUpload')
     .directive('zlUploadDragAndDrop', zlUploadDragAndDrop);
@@ -44,10 +45,10 @@
           var autosubmit = element.parent()[0].hasAttribute('autosubmit') 
             ? '' 
             : '<button class="submit-file">Upload</button>';
-          var htmlText = '<div class="div-file-container drop-div"><p>Drag your files here to upload</p> '+autosubmit+'<zl-progress-bar></zl-progress-bar></div>';
+          var htmlText = '<div class="div-file-container drop-div"><p>Drag your files here to upload</p> '+autosubmit+'<div class="progress-container"></div></div>';
           return htmlText;
         },
-        link: function(scope, element, attrs) {
+        link: function($scope, element, attrs) {
           element.on('dragover', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -67,29 +68,19 @@
             }
             if (e){
               // start upload upload->UploadFile
-              zlUploadService
-                .upload(e.dataTransfer.files, function(complete) { console.log({percentDone: complete}); })
-                .then(function(data) {
-                  //scope.onDone({files: ret.files, data: ret.data});
-                  console.log(data);
-                }, function(error) {
-                  //scope.onError({files: scope.files, type: 'UPLOAD_ERROR', msg: error});
-                  console.log(error);
-                },  function(progress) {
-                  console.log({percentDone: progress});
-                  console.log(progress);
-                });
-              }
-            });
+              zlUploadService.upload(e.dataTransfer.files,$scope);
+            }
+          });
         }
       };
     }
 
+  /* upload file directive */
   angular
     .module('90Tech.zlUpload')
     .directive('zlUploadFile', zlUploadFile);
 
-    function zlUploadFile(zlUploadService){    
+    function zlUploadFile(zlUploadService,$q,$compile,$rootScope,$timeout){    
       return {
         restrict: 'E',
         replace: true,
@@ -100,79 +91,159 @@
           var autosubmit = element.parent()[0].hasAttribute('autosubmit') 
             ? '' 
             : '<button class="submit-file">Upload</button>';
-          var htmlText = '<div class="div-file-container"><p><input type="file" accept="*" '+multiple+'/></p>'+autosubmit+'<zl-progress-bar></zl-progress-bar></div>';
+          var htmlText = '<div class="div-file-container"><p><input type="file" accept="*" '+multiple+'/></p>'+autosubmit+'<div class="progress-container"></div></div>';
           return htmlText;
         },
-        link: function(scope, element, attrs) {
+        link: function($scope, element, attrs) {
+
+
+
           // on change event listener
           element.bind('change', function() {
             var e = element.find('input')[0].files;
+
             if (e){
-            // start upload upload->UploadFile
-            zlUploadService
-              .upload(e, function(complete) { console.log(complete); })
+              zlUploadService.upload(e,$scope);
             }
-          }); //change
+
+          }); //change listener
+
         }
       };
     }
 
+  /* progressbar directive. Parent : zlUploadFile/zlUploadDragAndDrop */
   angular
     .module('90Tech.zlUpload')
     .directive('zlProgressBar', zlProgressBar);
 
-    function zlProgressBar($q,zlUploadService){    
+    function zlProgressBar($q,$timeout,zlUploadService){    
       return {
-        restrict: 'E',
-        template: "<div class='progress-bar'><div class='progress-bar-bar'></div><zl-cancel-button></zl-cancel-button><div>",    
+        restrict: 'EA',
+        scope: {
+            fileData:'='
+        },
+        template: function(){
+
+          var htmlText = "<div class='progress-bar'><div id='progress-state'>{{fileData.file.name}} : {{fileData.progress}} %</div><div style='width:{{fileData.progress}}%;' class='progress-bar-bar'></div><zl-cancel-retry id='zl-cancel-retry-{{fileData.id}}'></zl-cancel-retry>";  
+          return htmlText;
+        },
         link: function ($scope, element, attrs) {
 
-            // on upload progression, update progressionBar view
-            $scope.$on('handleUploadBroadcast', function(e, progress) {
-              updateProgress(progress);
-              console.log(progress);
-            });
-            function updateProgress(progress) {
-              document.getElementsByClassName('progress-bar-bar')[0].style.width = progress+"%";
-            }
+            $scope.$watch(
+              function(){ return $scope.fileData.progress; }
+              ,
+              function (newValue) {
+                if (angular.equals(newValue, 100)) {
+                    $timeout(function(){
+                      angular.element(document.querySelector('#zl-cancel-retry-'+$scope.fileData.id)).empty();
+                      $scope.$apply(); 
+                    });
+                }
+            },
+            true);
+
           }
         };
       }  
+  /* progressbar buttons directive. Parent : zlProgressBar */
+  angular
+    .module('90Tech.zlUpload')
+    .directive('zlCancelRetry', zlCancelRetry);
 
+    function zlCancelRetry($q,$timeout,$compile,zlUploadService){    
+      return {
+        restrict: 'E',
+        template: "",    
+        link: function ($scope,element, template) {
+
+            swapBtn(true);
+
+            $scope.$watch(
+              function(){ return $scope.fileData.cancel; }
+              ,
+              function (newValue, oldValue) {
+                if (!angular.equals(oldValue, newValue)) {
+                    swapBtn(newValue);
+                }
+            },
+            true);
+
+            function swapBtn(cancelOrRetry){
+              var appendBtn = cancelOrRetry
+              ? '</div><zl-cancel-button></zl-cancel-button><div>' 
+              : '</div><zl-retry-button></zl-retry-button><div>'; 
+
+              $timeout(function(){
+                element.empty();
+                element.append($compile(appendBtn)($scope));
+                $scope.$apply(); 
+              });
+                 
+            }
+        }
+      };
+    }
+
+  /* progressbar cancel button directive. Parent : zlCancelRetry */
   angular
     .module('90Tech.zlUpload')
     .directive('zlCancelButton', zlCancelButton);
 
-    function zlCancelButton($q,zlUploadService){    
+    function zlCancelButton($q,$timeout,zlUploadService){    
       return {
         restrict: 'E',
-        scope: {
-            showCancelButton: '@',
-            uploadCancel: '&'
-
-        },
-        template: "<button ng-show='showCancelButton' ng-click='uploadCancel();'>{{showCancelButton}}</button>",    
+        template: "<button id='cancelUploadButton' ng-click='uploadCancel();'>cancel</button>",    
         link: function ($scope, element, attrs) {
 
-            // by default, hide cancel button
-            $scope.showCancelButton = false;
-
-            // on upload progression, update progressionBar view
-            $scope.$on('handleUploadState', function(e, showListener) {
-                $scope.showCancelButton = showListener;
-                // need to update view
-                $scope.$apply();
+          // cancel upload button listener
+          $scope.uploadCancel = function() {
+            zlUploadService.uploadCancel($scope.fileData.request);
+            $timeout(function(){
+                    $scope.fileData.cancel = false;
+                    $scope.$apply();
             });
-            
-            // cancel upload button listener
-            $scope.uploadCancel = function(cancelUpload) {
-              zlUploadService.uploadCancel();
-            }
-
-
           }
-        };
-      }
+        }
+      };
+    }
 
-      
+  /* progressbar retry button directive. Parent : zlCancelRetry */
+  angular
+    .module('90Tech.zlUpload')
+    .directive('zlRetryButton', zlRetryButton);
+
+    function zlRetryButton($q,$timeout,zlUploadService){    
+      return {
+        restrict: 'E',
+        template: "<button id='zlRetryButton' ng-click='uploadRetry();'>retry</button>",    
+        link: function ($scope, element, attrs) {
+          // by default, hide cancel button
+
+          // cancel upload button listener
+          $scope.uploadRetry = function() {
+            $timeout(function(){
+                    $scope.fileData.cancel = true;
+                    $scope.$apply();
+            });
+
+            zlUploadService.uploadFile($scope.fileData.file,$scope.fileData.request)
+              .then(function(done) {
+                  $timeout(function(){
+                    $scope.fileData.progressdirective.remove();
+                  });
+                }, function(error) {
+                    console.log(error);
+                },  function(progress) {
+                  // need to use timeout to ensure digest probs & then $apply() the var update to the view
+                  $timeout(function(){
+                    $scope.fileData.progress = progress;
+                    $scope.$apply();
+                  });
+                });
+          }
+        }
+      };
+    }
+
 })();

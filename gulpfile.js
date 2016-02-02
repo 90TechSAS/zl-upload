@@ -6,6 +6,7 @@ var gulp       = require('gulp'),
     minifyCSS  = require('gulp-minify-css'),
     concat     = require('gulp-concat'),
     bowerFiles = require('main-bower-files'),
+    util = require('gulp-util'),
     browserify = require('browserify'),
     del        = require('del'),
     gulpDocs = require('gulp-ngdocs'),
@@ -54,12 +55,12 @@ gulp.task('index', function () {
 
 
 gulp.task('less', function () {
-    gulp.src('./assets/less/style.less')
-        .pipe(less())
+    gulp.src('./src/assets/less/style.less')
+        .pipe(less().on('error', util.log))
         .pipe(concat('style.css'))
         .pipe(minifyCSS())
         .pipe(rename('style.min.css'))
-        .pipe(gulp.dest('./assets/css/'));
+        .pipe(gulp.dest('./src/assets/css/'));
 });
 
 gulp.task('watch', function(){
