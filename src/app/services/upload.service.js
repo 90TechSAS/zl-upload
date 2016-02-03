@@ -22,7 +22,8 @@
       var vm = this;
       var url = '';
       var files;
-
+      var getAllProgress = [];
+      var averageProgress = 0;
       /**
        * @ngdoc service
        * @name zlUploadService#upload
@@ -35,7 +36,12 @@
         var arrayUpload = slice.call(e);
         var progressContainer = angular.element(document.querySelector('.progress-container'));
 
+        // clean data before each new uploads
+        getAllProgress = [];
         $rootScope.filesInformations = [];
+
+
+        //$rootScope.getAllProgress = [];
         // for each file start an upload instance 
         angular.forEach(arrayUpload, function(value, key) {
 
@@ -46,6 +52,8 @@
           var directiveString = $compile('<zl-progress-bar file-data=' + valueProp + '></zl-progress-bar></div>')(scope);
           
           // stock each object in an array to manipulate file's informations
+          getAllProgress.push(0);
+
           $rootScope.filesInformations.push({
             'id' : key+1,
             'progress' : 0,
@@ -61,11 +69,29 @@
           $rootScope.filesInformations[key].cancel = true;
 
           // start upload deferred (get progress callback from deferred.notify)
-          uploadFile(value,$rootScope.filesInformations[key].request)
+          emitUploadFile(value,key);
+
+        });
+      }
+
+      function calculateAverageProgress(){
+        var total = 0;
+        for(var i = 0; i < getAllProgress.length; i++) {
+            total += getAllProgress[i];
+        }
+        averageProgress = Math.round(total / getAllProgress.length);
+      }
+
+      function getAverageProgress(){
+        return averageProgress;
+      }
+
+      function emitUploadFile(value,index){
+          uploadFile(value,$rootScope.filesInformations[index].request)
             .then(function(done) {
 
               _.defer(function(){
-                $rootScope.filesInformations[key].progressdirective.remove();
+                $rootScope.filesInformations[index].progressdirective.remove();
               });
 
             }, function(error) {
@@ -73,12 +99,12 @@
             },  function(progress) {
 
               _.defer(function(){
-                $rootScope.filesInformations[key].progress = progress;
+                $rootScope.filesInformations[index].progress = progress;
+                getAllProgress[index] = progress;
+                calculateAverageProgress();
                 $rootScope.$apply();
               });
             });
-
-        });
       }
 
       /**
@@ -90,7 +116,7 @@
       */
       function uploadFile(files,xhr){
 
-        //xhr = new XMLHttpRequest();
+        //var xhr = $rootScope.filesInformations[index].request;
         var deferred = $q.defer();
         console.log('start upload file');
 
@@ -178,10 +204,12 @@
       };
 
       _.assign(vm, {
-        uploadFile:uploadFile,
+        emitUploadFile:emitUploadFile,
         upload:upload,
         getFiles:getFiles,
+        getAllProgress:getAllProgress,
         setFiles:setFiles,
+        getAverageProgress:getAverageProgress,
         setUrl:setUrl,
         uploadCancel:uploadCancel
       });

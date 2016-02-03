@@ -5,16 +5,31 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
 	<link href='https://fonts.googleapis.com/css?family=Roboto:300,400' rel='stylesheet' type='text/css'>
+	<!-- style of the file upload -->
 	<link href='../src/assets/css/style.min.css' rel='stylesheet' type='text/css'>
 </head>
+<style>
+	body{
+		font-family:"Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	}
+	/* put the file upload component in your container, it'll take 100% of the width's container & 210px in height */
+	.container{
+		width:500px;
+		margin:0 auto;
+	}
+</style>
 <body>
 
+	<div class="container">
+ 		<zl-upload to="upload.php" dragndrop multiple></zl-upload>
+ 	</div>
 
- 	<zl-upload to="upload.php" dragndrop multiple></zl-upload>
-
+	<!-- dependencies -->
 	<script src="../bower_components/angular/angular.js"></script>
 	<script src="../bower_components/lodash/lodash.js"></script>
+	<!-- library to add -->
 	<script src="../build/app.js"></script>
+	<!-- add 90Tech.zlUpload to your app  -->
 	<script>
 	  var demo = angular.module("demo",['90Tech.zlUpload']);
 	</script>  

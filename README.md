@@ -10,13 +10,35 @@ Lightweight Angularjs directive allowing to upload files.
 
 Here an example on how to use a simple fileupload :
 
-`<zl-upload to="upload.php" dragndrop multiple></zl-upload>`
+`<div class="container"><zl-upload to="upload.php" dragndrop multiple></zl-upload></div>`
+
+## Below a basic implementation of zl-upload
+    <html ng-app="demo">
+    <head>
+	    <!-- file upload stylesheet -->
+	    <link href=../bower_components/zl-upload/style.min.js' rel='stylesheet' type='text/css'>
+	</head>
+    <body>
+	<!-- your custom container -->
+	<div class="container">
+		<!-- custom upload directive -->
+ 		<zl-upload to="upload.php" dragndrop multiple></zl-upload>
+ 	</div>
+
+	<!-- dependencies -->
+	<script src="../bower_components/angular/angular.js"></script>
+	<script src="../bower_components/lodash/lodash.js"></script>
+	
+	<!-- library to add -->
+	<script src="../bower_components/zl-upload/zl-upload.js"></script>
+	
+	<!-- add 90Tech.zlUpload to your app  -->
+	<script>
+	  var demo = angular.module("demo",['90Tech.zlUpload']);
+	</script> 
 
 **TODO :**
  - todo.md
- - changelog.md
- - principal progressbar based on every progressbar's instance
- - autosubmit
- - responsive template
  - create bower package
+ - test coverage to 100%
  - gh-pages instead of test folder.
