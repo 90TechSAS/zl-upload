@@ -6,7 +6,7 @@
 	<meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
 	<link href='https://fonts.googleapis.com/css?family=Noto+Sans:400,600,700' rel='stylesheet' type='text/css'>
 	<!-- style of the file upload -->
-	<link href='../src/assets/css/style.min.css' rel='stylesheet' type='text/css'>
+	<link href='src/assets/css/style.min.css' rel='stylesheet' type='text/css'>
 </head>
 <style>
 	body{
@@ -22,14 +22,14 @@
 <body>
 
 	<div class="container">
- 		<zl-upload to="upload.php" dragndrop multiple autosubmit></zl-upload>
+ 		<zl-upload to="https://fast-forest-70358.herokuapp.com/" dragndrop multiple autosubmit></zl-upload>
  	</div>
 
 	<!-- dependencies -->
-	<script src="../bower_components/angular/angular.js"></script>
-	<script src="../bower_components/lodash/lodash.js"></script>
+	<script src="bower_components/angular/angular.js"></script>
+	<script src="bower_components/lodash/lodash.js"></script>
 	<!-- library to add -->
-	<script src="../build/app.js"></script>
+	<script src="build/app.js"></script>
 	<!-- add 90Tech.zlUpload to your app  -->
 	<script>
 	  var demo = angular.module("demo",['90Tech.zlUpload']);
