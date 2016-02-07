@@ -39,5 +39,8 @@ Here an example on how to use a simple fileupload :
 
 **TODO :**
  - todo.md
+ - manage files extensions
+ - truncate filename on progressbar
+ - change the use of $rootScope by a service callback
  - create bower package
  - gh-pages instead of test folder.
