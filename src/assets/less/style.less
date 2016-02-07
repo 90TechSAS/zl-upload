@@ -1,11 +1,26 @@
+body{
+	// prevent button select
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	-webkit-touch-callout: none;
+}
+
+
 /* submit button */
 .zl-submit-file {
 	width: 100px;
 	position: absolute;
   left: 0px;
-  background-color:rgba(33, 33, 33, 0.9);
+  background-color:#3F51B5;
+  color:#FFFFFF;
+	box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+	font-weight: 600;
+	border-radius: 2px;
   margin-left:  calc(~"50% - 50px");
-	padding:6px;
+  line-height: 36px;
 	font-size: 1.1rem;
 	cursor:pointer;
 }
@@ -25,39 +40,33 @@
 
 /* progressbar style */
 .progress-bar {
-  border-style: solid;
-  border-width: 1px;
-  background-color: #FFFFFF;
-  border-color: rgba(182, 182, 182, 0.6); 
+	color:#fafafa;
+  background-color: #81D4FA;
   position:relative;
-  height: 20px;
+  height: 25px;
   margin: 5px;
 }
-.average-progress-bar{
-  height: 30px;
-  .progress-bar-bar .progress-state{
-		margin:0px;
-	  line-height: 30px;
-  }
-}
-
 .progress-bar-bar {
   width: 0px;
-  background-color: rgba(182, 182, 182, 0.6);
+  background-color: #03A9F4;
   height: 100%;
   position: absolute;
   top: 0px;
-  .progress-state {
-		margin:0px;
-	  line-height: 20px;
+}
+.average-progress-bar{
+	background-color: #80CBC4;
+  height: 30px;
+	.progress-bar-bar {
+	  background-color: #009688;
 	}
 }
 
-zl-cancel-button,zl-retry-button{
-	position:absolute;
-	right:0px;
-	top:0px;
+
+.progress-state {
+	position: absolute;
+	width: 100%;
 }
+
 
 
 /* custom input file */
@@ -78,11 +87,11 @@ zl-cancel-button,zl-retry-button{
 /* container style */
 .div-file-container {
 	position:relative;
-	background: #F5F5F5;
-	background-image: url(~'data:image/svg+xml,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="80" height="80" fill="#B6B6B6" fill-opacity="0.3" viewBox="0 0 512 512"><path d="M0 448h512v32h-512zM512 384v32h-512v-32l64-128h128v64h128v-64h128zM112 160l144-144 144 144h-112v128h-64v-128z"></path></svg>');
+	background: #FFFFFF;
+	box-shadow:0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+	background-image: url(~'data:image/svg+xml,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="80" height="80" fill="#f5f5f5" viewBox="0 0 512 512"><path d="M0 448h512v32h-512zM512 384v32h-512v-32l64-128h128v64h128v-64h128zM112 160l144-144 144 144h-112v128h-64v-128z"></path></svg>');
   background-repeat: no-repeat;
   background-position: center;
-  color:#B6B6B6;
   font-size: 1.3rem;
   width: 100%;
   max-width: 1000px;
@@ -90,39 +99,55 @@ zl-cancel-button,zl-retry-button{
   text-align: center;
   padding: 24px;
 	height: 160px;
-	border: #B6B6B6 1px solid;
+	border-radius: 2px;
 
 		&.drop-div {
-	  outline: 2px dashed #B6B6B6;
-	  outline-offset: -10px;
-	  -webkit-transition: outline-offset .30s ease-in-out, background-color .30s linear;
-	  transition: outline-offset .30s ease-in-out, background-color .30s linear;
+		  outline: 2px dashed rgba(0,0,0,.2);
+		  outline-offset: -10px;
+	    transition: color .2s ease-in-out,outline-color .2s ease-in-out;
 		}
 		&.dragover {
-	  outline-color: #7F7F7F;
-	  background-color:#E5E5E5;
+		  outline-color: #03A9F4;
+		  color: #03A9F4;
 		}
 		p{
 			margin: 10px 0px 10px 0px;
 			font-size:1rem;
-		}		
+		}
+		zl-cancel-button,zl-retry-button{
+			position:absolute;
+			right:1px;
+			top:0px;
+			button{
+				line-height: 20px;
+			}
+		}
 		.cancel-upload-button{
-			background-color:rgba(255, 82, 82, 0.9);
-		}		
+			background-color:#db4437;
+			color:#fff;
+		}
 		.retry-upload-button{
-			background-color:rgba(33, 33, 33, 0.9);
+			background-color:#eee;
 		}
 		strong{
 			font-size:1.2rem;
 		}
 		button {
-	  	color:#F5F5F5;
 			box-shadow:0 1px 1px rgba(0,0,0,0.13),0 1px 1px rgba(0,0,0,0.16);
 			border:none;
 			text-transform: uppercase;
-			font-size: 1rem;
+			display: inline-block;
+			line-height: 32px;
+			border-radius: 2px;
+			font-size: 0.9em;
+			background-color: #fff;
+			color: #646464;
+			transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+			transition-delay: 0.2s;
+			box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+				&:active {
+		      box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
+		      transition-delay: 0s;
+		    }
 		}
 }
-
-
-

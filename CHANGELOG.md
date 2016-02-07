@@ -1,5 +1,18 @@
 # Change Log
 
+0.9.0 / 2016-02-07
+==================
+
+
+### Changed
+  * Updated Stylesheet
+  * use of $watch changed by callback system in the root directive
+
+### Added
+  * Object view management
+  * Added multiple parameter for drag & drop
+  * Service full documented with ng-doc (still not generated)
+
 
 0.8.0 / 2016-02-03
 ==================

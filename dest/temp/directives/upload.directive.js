@@ -1,6 +1,6 @@
 /**
  * Created by Renaud ROHLINGER on 22/01/2016.
- * Upload Directive 
+ * Upload Directive
  */
 
 'use strict';
@@ -9,66 +9,106 @@
 
   'use strict';
 
-  zlUpload.$inject = ['$compile', 'zlUploadService'];
+  zlUpload.$inject = ['$compile', '$timeout', 'zlUploadService'];
 
   /* drag & drop upload file directive */
   angular.module('90Tech.zlUpload').directive('zlUpload', zlUpload);
 
-  function zlUpload($compile, zlUploadService) {
+  function zlUpload($compile, $timeout, zlUploadService) {
     return {
       restrict: 'E',
       transclude: true,
       scope: {
         dragndrop: '@',
         autosubmit: '@',
-        multiple: '@'
+        multiple: '@',
+        updateUploadView: '@'
       },
-      template: '<div class="div-file-container {{dragndrop}}"><p><zl-file-input></zl-file-input>' + '{{uploadFileText}}</p><zl-submit-container></zl-submit-container><div class="progress-container">' + '</div><zl-progress-average class="progress-average-container"></zl-progress-average></div>',
-      link: function link($scope, element, attrs) {
+      template: '<div class="div-file-container {{dragndrop}}"><p><zl-file-input ng-show="updateUploadView.starting.inview"></zl-file-input>' + ' {{uploadListenerText}}</p><zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container><div class="progress-container" ng-show="updateUploadView.uploading.inview">' + '</div><zl-progress-average class="progress-average-container" ng-show="updateUploadView.uploading.inview"></zl-progress-average></div>',
+      link: function link($scope, element, attrs, controller) {
+
+        /********************************************
+        *           DOM MANAGEMENT & PARAMS         *
+        ********************************************/
 
         var dropdiv = angular.element(document.querySelector('.div-file-container'));
         var inputfile = '';
         var multiple = '';
+        var zlFileInputText = 'Choose a file';
+
+        $scope.updateUploadView = {
+          starting: {
+            inview: false,
+            uploadtext: 'or drag and drop here'
+          },
+          ready: {
+            inview: false,
+            uploadtext: "files selected"
+          },
+          uploading: {
+            inview: false,
+            uploadtext: "files are getting uploaded"
+          },
+          done: {
+            inview: false,
+            uploadtext: "files uploaded perfectly !"
+          }
+        };
+
+        // callback updating the view
+        $scope.updateInView = function (state) {
+          angular.forEach($scope.updateUploadView, function (element, key) {
+
+            // allow to hide others views that aren't needed & show the message
+            if (element == state) {
+              _.defer(function () {
+                element.inview = true;
+                $scope.uploadListenerText = state.uploadtext;
+                $scope.$apply();
+              });
+            } else {
+              _.defer(function () {
+                element.inview = false;
+                $scope.$apply();
+              });
+            }
+          });
+        };
 
         if (attrs.dragndrop != undefined) {
           attrs.dragndrop = 'drop-div';
-          $scope.uploadFileText = " or drag & drop";
         }
+
         if (attrs.autosubmit == undefined) {
-          var autosubmit = $compile('<zl-submit-button ng-show="showUpload"></zl-submit-button>')($scope);
+          var autosubmit = $compile('<zl-submit-button></zl-submit-button>')($scope);
           element.find('zl-submit-container').append(autosubmit);
         }
         if (attrs.multiple != undefined) {
           multiple = 'multiple';
+          zlFileInputText = 'Choose your files';
         }
-        element.find('zl-file-input').append($compile('<input class="custom-input-file" id="file" type="file" accept="*" ' + multiple + '/><label for="file"><strong>Choose a file</strong></label>')($scope));
+        element.find('zl-file-input').append($compile('<input class="custom-input-file" id="file" type="file" accept="*" ' + multiple + '/><label for="file"><strong>' + zlFileInputText + '</strong></label>')($scope));
+
+        // method called to update the view on the state starting
+        zlUploadService.startingInview($scope.updateUploadView.starting, attrs.dragndrop, $scope.updateInView);
 
         // set file url
         zlUploadService.setUrl(attrs.to);
 
-        // file on change listener
+        /*************************************
+        *           FILE UPLOAD BIND         *
+        **************************************/
+
+        // file input bind -> upload procedure starting
         element.bind('change', function () {
-
-          // show submit button if autosubmit is not set
-          if (attrs.autosubmit == undefined) {
-            $scope.showUpload = true;
-          }
-
           // set files
           var files = element.find('input')[0].files;
 
-          _.defer(function () {
-            $scope.uploadFileText = ' - ' + files.length + ' files selected';
-            $scope.$apply();
-          });
-
-          zlUploadService.setFiles(files);
-          upload(files);
+          callServiceUpload(files);
         });
 
-        // if dragndrop start listeners
+        // drag and drop bind -> upload procedure starting
         if (attrs.dragndrop != undefined) {
-          console.log(element);
           element.on('dragover', function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -89,35 +129,41 @@
             e.stopPropagation();
             dropdiv.removeClass('dragover');
 
-            // show submit button if autosubmit is not set
-            if (attrs.autosubmit == undefined) {
-              $scope.showUpload = true;
-            }
             var files = e.dataTransfer.files;
 
-            _.defer(function () {
-              $scope.uploadFileText = ' - ' + files.length + ' files selected';
-              $scope.$apply();
-            });
+            // boolean to check if user is dropping more than 1 file
+            var dropMultipleFiles = files.length > 1;
 
-            // set files
-            zlUploadService.setFiles(files);
-            upload(files);
+            // check if the upload is already in progress or not
+            if ($scope.updateUploadView.starting.inview === true || $scope.updateUploadView.ready.inview === true) {
+              // check if there is more than 1 file
+              if (dropMultipleFiles) {
+                // multiple parameter is set
+                if (attrs.multiple != undefined) {
+                  callServiceUpload(files);
+                } else {
+                  alert('You can\'t upload more than 1 file');
+                }
+              } else {
+                callServiceUpload(files);
+              }
+            }
           });
         }
+        // call the upload service
+        function callServiceUpload(filesGetter) {
+          // set files
+          zlUploadService.setFiles(filesGetter);
 
-        function upload(files) {
-          // autosubmit & files are ok
-          if (attrs.autosubmit != undefined && zlUploadService.getFiles()) {
-            _.defer(function () {
-              $scope.uploadFileText = "Uploading...";
-              $scope.showUpload = false;
-              $scope.$apply();
-              zlUploadService.upload(files, $scope);
-            });
+          // show submit button if autosubmit is not set else start uploading
+          if (attrs.autosubmit == undefined) {
+            zlUploadService.readyInview($scope.updateUploadView.ready, $scope.updateInView);
+          } else {
+            zlUploadService.uploadingInview($scope.updateUploadView.uploading, $scope, $scope.updateInView);
           }
         }
       }
+
     };
   }
 
@@ -129,11 +175,8 @@
       restrict: 'E',
       template: '<button class="zl-submit-file" ng-click="clickToSubmit();">Upload</button>',
       link: function link($scope, element, attrs) {
-
         $scope.clickToSubmit = function () {
-          $scope.uploadFileText = " Uploading...";
-          $scope.showUpload = false;
-          zlUploadService.upload(zlUploadService.getFiles(), $scope);
+          zlUploadService.uploadingInview($scope.updateUploadView.uploading, $scope, $scope.updateInView);
         };
       }
     };
@@ -149,7 +192,7 @@
         fileData: '='
       },
       template: function template() {
-        var htmlText = "<div class='progress-bar'><div class='progress-state'>{{fileData.file.name}} : {{fileData.progress}} %</div><div style='width:{{fileData.progress}}%;' class='progress-bar-bar'></div><zl-cancel-retry id='zl-cancel-retry-{{fileData.id}}'></zl-cancel-retry>";
+        var htmlText = "<div class='progress-bar'><div style='width:{{fileData.progress}}%;' class='progress-bar-bar'></div><div class='progress-state'>{{fileData.file.name}} : {{fileData.progress}} %</div><zl-cancel-retry id='zl-cancel-retry-{{fileData.id}}'></zl-cancel-retry>";
         return htmlText;
       },
       link: function link($scope, element, attrs) {
@@ -170,10 +213,10 @@
   /* progressbar directive. Parent : zlUploadFile/zlUploadDragAndDrop */
   angular.module('90Tech.zlUpload').directive('zlProgressAverage', zlProgressAverage);
 
-  function zlProgressAverage(zlUploadService) {
+  function zlProgressAverage($timeout, zlUploadService) {
     return {
       restrict: 'EA',
-      template: "<div ng-show='showProgressAverage' class='progress-bar average-progress-bar'><div class='progress-state'>Progression : {{progressAverage}}<div><div style='width:{{progressAverage}}%;' class='progress-bar-bar'></div>",
+      template: "<div class='progress-bar average-progress-bar'><div style='width:{{progressAverage}}%;' class='progress-bar-bar'></div><div class='progress-state'>{{progressAverage}}%<div>",
       link: function link($scope, element, attrs) {
         $scope.progressAverage = 0;
         $scope.showProgressAverage = false;
@@ -183,14 +226,15 @@
         }, function (newValue) {
 
           _.defer(function () {
-            if (newValue != 0 && $scope.showProgressAverage != true) {
-              $scope.showProgressAverage = true;
-            }
+            // if(newValue!=0 && $scope.showProgressAverage != true){
+            //   $scope.showProgressAverage = true;
+            // }
             $scope.progressAverage = newValue;
             if (angular.equals(newValue, 100) && !angular.equals(newValue, 0)) {
-              $scope.uploadFileText = " or drag & drop";
-              $scope.showUpload = true;
-              $scope.showProgressAverage = false;
+              zlUploadService.doneInview($scope.updateUploadView.done, $scope.updateInView);
+              $timeout(function () {
+                zlUploadService.startingInview($scope.updateUploadView.starting, $scope.dragndrop, $scope.updateInView);
+              }, 1500);
             }
             $scope.$apply();
           });

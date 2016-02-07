@@ -6,51 +6,51 @@
 (function() {
   'use strict';
 
-  /**
-   * @ngdoc service
-   * @name 90Tech.zlUpload:zlUploadService
-   * @description
-   * # zlUploadService
-   * Upload service
-   *
-  */
+
   angular
     .module('90Tech.zlUpload')
     .service('zlUploadService', zlUploadService);
 
+    /**
+     * @ngdoc service
+     * @name 90Tech.zlUpload:zlUploadService
+     * @description
+     * # zlUploadService
+     * Upload service
+     *
+    */
     function zlUploadService($http,$q,$rootScope,$compile) {
       var vm = this;
       var url = '';
       var files;
       var getAllProgress = [];
       var averageProgress = 0;
+
       /**
        * @ngdoc service
        * @name zlUploadService#upload
        * @methodOf 90Tech.zlUpload:zlUploadService
-       * @param {Filelist} The Filelist that will be upload
+       * @param {Object} $scope Allow access to the view
        * @description Manipulate Filelist to prepare for upload
       */
-      function upload(e,scope){
+      function upload($scope){
         var slice = Array.prototype.slice;
-        var arrayUpload = slice.call(e);
+        var arrayUpload = slice.call(vm.getFiles());
         var progressContainer = angular.element(document.querySelector('.progress-container'));
 
         // clean data before each new uploads
         getAllProgress = [];
         $rootScope.filesInformations = [];
 
-
-        //$rootScope.getAllProgress = [];
-        // for each file start an upload instance 
+        // for each file start an upload instance
         angular.forEach(arrayUpload, function(value, key) {
 
           // bind to scope
           var valueProp = 'value' + key;
 
           // create a directive for each upload & append it to the main directive (need $apply to update view)
-          var directiveString = $compile('<zl-progress-bar file-data=' + valueProp + '></zl-progress-bar></div>')(scope);
-          
+          var directiveString = $compile('<zl-progress-bar file-data=' + valueProp + '></zl-progress-bar></div>')($scope);
+
           // stock each object in an array to manipulate file's informations
           getAllProgress.push(0);
 
@@ -63,7 +63,7 @@
             'request' : new XMLHttpRequest()
           });
 
-          scope[valueProp] = $rootScope.filesInformations[key];
+          $scope[valueProp] = $rootScope.filesInformations[key];
 
           progressContainer.append($rootScope.filesInformations[key].progressdirective);
           $rootScope.filesInformations[key].cancel = true;
@@ -74,6 +74,74 @@
         });
       }
 
+      /**
+       * @ngdoc service
+       * @name zlUploadService#startingInview
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @param {Object,Boolean,Function} The Object file, the dragndrop check and the directive's function callback
+       * @description Method called to update to the ready state
+      */
+      function startingInview(state, dragndrop,callback) {
+        // make sure to clean everything before start to prevent retry problems
+        $rootScope.filesInformations = [];
+
+        if(dragndrop!=undefined){
+          state.uploadtext = ' or drag and drop here';
+        }else{
+          state.uploadtext = '';
+        }
+        state.inview = true;
+        callback(state);
+      }
+
+      /**
+       * @ngdoc service
+       * @name zlUploadService#readyInview
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @param {Object,Function} The Object file & the directive's function callback
+       * @description Method called to update to the ready state
+      */
+      function readyInview(state,callback) {
+        state.uploadtext = ' ' + vm.getFiles().length + ' files selected';
+        state.inview = true;
+        callback(state);
+      }
+
+
+      /**
+       * @ngdoc service
+       * @name zlUploadService#uploadingInview
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @param {Object,Function} The Object file & the directive's function callback
+       * @description Method called to update to the uploading state & call the upload service method
+      */
+      function uploadingInview(state,$scope,callback) {
+        state.inview = true;
+        if(vm.getFiles()) {
+          upload($scope);
+        }
+        callback(state);
+      }
+
+      /**
+       * @ngdoc service
+       * @name zlUploadService#doneInview
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @param {Object,Function} The Object file & the directive's function callback
+       * @description Method called to update to the done state
+      */
+      function doneInview(state,callback) {
+          state.inview = true;
+          callback(state);
+      }
+
+
+      /**
+       * @ngdoc service
+       * @name zlUploadService#calculateAverageProgress
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @description Calculate the average progress (% all files uploading)
+      */
       function calculateAverageProgress(){
         var total = 0;
         for(var i = 0; i < getAllProgress.length; i++) {
@@ -82,29 +150,39 @@
         averageProgress = Math.round(total / getAllProgress.length);
       }
 
+      /**
+       * @ngdoc service
+       * @name zlUploadService#getAverageProgress
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @description return average progress (% all files uploading)
+      */
       function getAverageProgress(){
         return averageProgress;
       }
 
+      /**
+       * @ngdoc service
+       * @name zlUploadService#emitUploadFile
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @param {File,Int} The file to upload & the index of filesInformations[]
+       * @description Upload File & manage callback of the upload (done, error, progress)
+      */
       function emitUploadFile(value,index){
-          uploadFile(value,$rootScope.filesInformations[index].request)
-            .then(function(done) {
-
-              _.defer(function(){
-                $rootScope.filesInformations[index].progressdirective.remove();
-              });
-
-            }, function(error) {
-                console.log(error);
-            },  function(progress) {
-
-              _.defer(function(){
-                $rootScope.filesInformations[index].progress = progress;
-                getAllProgress[index] = progress;
-                calculateAverageProgress();
-                $rootScope.$apply();
-              });
+        uploadFile(value,$rootScope.filesInformations[index].request)
+          .then(function(done) {
+            _.defer(function(){
+              $rootScope.filesInformations[index].progressdirective.remove();
             });
+          }, function(error) {
+              console.log(error);
+          },  function(progress) {
+            _.defer(function(){
+              $rootScope.filesInformations[index].progress = progress;
+              getAllProgress[index] = progress;
+              calculateAverageProgress();
+              $rootScope.$apply();
+            });
+          });
       }
 
       /**
@@ -147,12 +225,12 @@
         }
         xhr.open("POST", vm.url);
         xhr.send(data);
-        return deferred.promise;    
+        return deferred.promise;
       };
 
       /**
        * @ngdoc service
-       * @name zlUploadService#uploadFile
+       * @name zlUploadService#uploadCancel
        * @methodOf 90Tech.zlUpload:zlUploadService
        * @description Cancel XMLHttpRequest
       */
@@ -205,7 +283,10 @@
 
       _.assign(vm, {
         emitUploadFile:emitUploadFile,
-        upload:upload,
+        readyInview:readyInview,
+        startingInview:startingInview,
+        uploadingInview:uploadingInview,
+        doneInview:doneInview,
         getFiles:getFiles,
         getAllProgress:getAllProgress,
         setFiles:setFiles,

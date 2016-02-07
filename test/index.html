@@ -4,15 +4,16 @@
 	<title>90techSASAngular-zlUpload</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
-	<link href='https://fonts.googleapis.com/css?family=Roboto:300,400' rel='stylesheet' type='text/css'>
+	<link href='https://fonts.googleapis.com/css?family=Noto+Sans:400,600,700' rel='stylesheet' type='text/css'>
 	<!-- style of the file upload -->
 	<link href='../src/assets/css/style.min.css' rel='stylesheet' type='text/css'>
 </head>
 <style>
 	body{
-		font-family:"Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-family: 'Noto Sans', sans-serif;
+		background-color:#fafafa;
 	}
-	/* put the file upload component in your container, it'll take 100% of the width's container & 210px in height */
+	/* put the file upload component in your container, it'll take 100% of the width's container and 210px in height */
 	.container{
 		width:500px;
 		margin:0 auto;
@@ -21,7 +22,7 @@
 <body>
 
 	<div class="container">
- 		<zl-upload to="upload.php" dragndrop multiple></zl-upload>
+ 		<zl-upload to="upload.php" dragndrop multiple autosubmit></zl-upload>
  	</div>
 
 	<!-- dependencies -->
@@ -32,6 +33,6 @@
 	<!-- add 90Tech.zlUpload to your app  -->
 	<script>
 	  var demo = angular.module("demo",['90Tech.zlUpload']);
-	</script>  
+	</script>
 </body>
 </html>

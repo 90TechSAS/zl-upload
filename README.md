@@ -1,7 +1,7 @@
 # zl-upload
 Lightweight Angularjs directive allowing to upload files.
 
-# FileUpload
+## FileUpload
 **Parameters :**
  - `to` is the url for the upload
  - `multiple` allow to upload multiples files at the same time
@@ -28,17 +28,16 @@ Here an example on how to use a simple fileupload :
 	<!-- dependencies -->
 	<script src="../bower_components/angular/angular.js"></script>
 	<script src="../bower_components/lodash/lodash.js"></script>
-	
+
 	<!-- library to add -->
 	<script src="../bower_components/zl-upload/zl-upload.js"></script>
-	
+
 	<!-- add 90Tech.zlUpload to your app  -->
 	<script>
 	  var demo = angular.module("demo",['90Tech.zlUpload']);
-	</script> 
+	</script>
 
 **TODO :**
  - todo.md
  - create bower package
- - test coverage to 100%
  - gh-pages instead of test folder.
