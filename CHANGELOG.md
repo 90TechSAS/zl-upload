@@ -1,5 +1,24 @@
 # Change Log
 
+0.9.1 / 2016-02-08
+==================
+
+### Removed
+  * Multiple parameter
+
+### Changed
+  * Updated progressAverage system
+  * Updated README
+  * attribute to -> zlf-to
+  * attribute dragndrop -> zlf-dragndrop
+  * attribute autosubmit -> zlf-autosubmit
+
+### Added
+ * parameter `zlf-max-files` if set, allow to upload x files maximum. The limit by default is 1 file max
+ * parameter `zlf-max-size-mb` if set, provide a limit of size to the files accepted (in MB)
+ * parameter `zlf-accept` if set, allow to filter files extensions
+
+
 0.9.0 / 2016-02-07
 ==================
 

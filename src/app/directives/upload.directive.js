@@ -20,14 +20,17 @@
         restrict: 'E',
         transclude: true,
         scope: {
-          dragndrop : '@',
-          autosubmit : '@',
-          multiple : '@',
+          zlfDragndrop : '@',
+          zlfAutosubmit : '@',
+          zlfMaxFiles : '@',
+          zlfMaxSizeMb : '@',
+          zlfAccept : '@',
           updateUploadView : '@'
         },
-        template : '<div class="div-file-container {{dragndrop}}"><p><zl-file-input ng-show="updateUploadView.starting.inview"></zl-file-input>'+
-                         ' {{uploadListenerText}}</p><zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container><div class="progress-container" ng-show="updateUploadView.uploading.inview">'+
-                         '</div><zl-progress-average class="progress-average-container" ng-show="updateUploadView.uploading.inview"></zl-progress-average></div>',
+        template : `<div class="div-file-container {{zlfDragndrop}}"><p><zl-file-input ng-show="updateUploadView.starting.inview"></zl-file-input>\
+                    {{uploadListenerText}}</p><zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container>\
+                    <div class="progress-container" ng-show="updateUploadView.uploading.inview">\
+                    </div><zl-progress-average class="progress-average-container" ng-show="updateUploadView.uploading.inview"></zl-progress-average></div>`,
         link: function($scope, element, attrs,controller) {
 
           /********************************************
@@ -37,6 +40,7 @@
           var dropdiv = angular.element(document.querySelector('.div-file-container'));
           var inputfile = '';
           var multiple = '';
+          var accept = '';
           var zlFileInputText = 'Choose a file';
 
           $scope.updateUploadView =
@@ -79,22 +83,49 @@
             });
           }
 
-          if(attrs.dragndrop!=undefined) {
-            attrs.dragndrop = 'drop-div';
+          $scope.progressAverage = 0;
+          $scope.showProgressAverage = false;
+
+          // callback updating the progressbar average
+          $scope.updateProgressAverage = function (progress){
+            _.defer(function(){
+              $scope.progressAverage = progress;
+              if (angular.equals(progress, 100) && !angular.equals(progress, 0)){
+                  zlUploadService.doneInview($scope.updateUploadView.done,$scope.updateInView);
+                $timeout(function(){
+                  zlUploadService.startingInview($scope.updateUploadView.starting,$scope.zlfDragndrop,$scope.updateInView);
+                },1500)
+              }
+              $scope.$apply();
+            });
           }
 
-          if(attrs.autosubmit==undefined) {
-            var autosubmit = $compile('<zl-submit-button></zl-submit-button>')($scope);
-            element.find('zl-submit-container').append(autosubmit);
+          if(attrs.zlfDragndrop!=undefined){
+            attrs.zlfDragndrop = 'drop-div';
           }
-          if(attrs.multiple!=undefined) {
+          if(attrs.zlfAccept==undefined){
+            accept = '*';
+          }else{
+            accept = $scope.zlfAccept;
+          }
+
+          if(attrs.zlfAutosubmit==undefined){
+            var zlfAutosubmit = $compile('<zl-submit-button></zl-submit-button>')($scope);
+            element.find('zl-submit-container').append(zlfAutosubmit);
+          }
+
+          if(attrs.zlfMaxFiles==undefined){
+            $scope.zlfMaxFiles = 1;
+            zlFileInputText = 'Choose your file';
+          }else{
             multiple = 'multiple';
             zlFileInputText = 'Choose your files';
           }
-          element.find('zl-file-input').append($compile('<input class="custom-input-file" id="file" type="file" accept="*" ' + multiple + '/><label for="file"><strong>' + zlFileInputText +'</strong></label>')($scope));
+
+          element.find('zl-file-input').append($compile(`<input class="custom-input-file" id="file" type="file" accept="${accept}" ${multiple}/><label for="file"><strong>${zlFileInputText}</strong></label>`)($scope));
 
           // method called to update the view on the state starting
-          zlUploadService.startingInview($scope.updateUploadView.starting,attrs.dragndrop,$scope.updateInView);
+          zlUploadService.startingInview($scope.updateUploadView.starting,attrs.zlfDragndrop,$scope.updateInView);
 
           // set file url
           zlUploadService.setUrl(attrs.to);
@@ -114,7 +145,7 @@
           });
 
           // drag and drop bind -> upload procedure starting
-          if(attrs.dragndrop!=undefined) {
+          if(!$scope.zlfDragndrop) {
             element.on('dragover', function(e) {
               e.preventDefault();
               e.stopPropagation();
@@ -137,6 +168,7 @@
               dropdiv.removeClass('dragover');
 
               var files = e.dataTransfer.files;
+              console.log(files[0].type);
 
               // boolean to check if user is dropping more than 1 file
               var dropMultipleFiles = files.length > 1;
@@ -146,12 +178,7 @@
               if($scope.updateUploadView.starting.inview===true || $scope.updateUploadView.ready.inview===true){
                 // check if there is more than 1 file
                 if(dropMultipleFiles){
-                  // multiple parameter is set
-                  if(attrs.multiple!=undefined){
                     callServiceUpload(files);
-                  }else{
-                    alert('You can\'t upload more than 1 file');
-                  }
                 }else{
                     callServiceUpload(files);
                 }
@@ -163,11 +190,31 @@
           }
           // call the upload service
           function callServiceUpload(filesGetter){
+
+            var ExceedLimit = [];
+
+            if (filesGetter.length > $scope.zlfMaxFiles) {
+              console.log(`Cannot upload ${filesGetter.length} files, maxium allowed is ${$scope.zlfMaxFiles}`);
+              return;
+            }
+            for (var i = 0; i < $scope.zlfMaxFiles; i++) {
+                if (i >= filesGetter.length) break;
+                var file = filesGetter[i];
+                if (file.size > $scope.zlfMaxSizeMb * 1048576) {
+                    ExceedLimit.push(file);
+                }
+            }
+
+            if (ExceedLimit.length > 0) {
+                console.log(`Files are larger than the specified max (${$scope.zlfMaxSizeMb}MB)`);
+                return;
+            }
+
             // set files
             zlUploadService.setFiles(filesGetter);
 
-            // show submit button if autosubmit is not set else start uploading
-            if(attrs.autosubmit==undefined) {
+            // show submit button if zlfAutosubmit is not set else start uploading
+            if(attrs.zlfAutosubmit==undefined){
               zlUploadService.readyInview($scope.updateUploadView.ready,$scope.updateInView);
             }else{
               zlUploadService.uploadingInview($scope.updateUploadView.uploading,$scope,$scope.updateInView);
@@ -247,15 +294,13 @@
             function (newValue) {
 
                   _.defer(function(){
-                    // if(newValue!=0 && $scope.showProgressAverage != true){
-                    //   $scope.showProgressAverage = true;
-                    // }
-                    $scope.progressAverage = newValue;
                     if (angular.equals(newValue, 100) && !angular.equals(newValue, 0)){
                       zlUploadService.doneInview($scope.updateUploadView.done,$scope.updateInView);
                       $timeout(function(){
-                        zlUploadService.startingInview($scope.updateUploadView.starting,$scope.dragndrop,$scope.updateInView);
+                        zlUploadService.startingInview($scope.updateUploadView.starting,$scope.zlfDragndrop,$scope.updateInView);
                       },1500)
+                    }else{
+                      $scope.progressAverage = newValue;
                     }
                     $scope.$apply();
                   });
@@ -346,6 +391,7 @@
                     $scope.$apply();
             });
             var key = $scope.fileData.id-1;
+
             zlUploadService.emitUploadFile($scope.fileData.file,key);
           }
         }

@@ -25,6 +25,10 @@
       var files;
       var getAllProgress = [];
       var averageProgress = 0;
+      var FilesInformations = [];
+      var FilesInformationsIndex = {};
+
+
 
       /**
        * @ngdoc service
@@ -40,11 +44,11 @@
 
         // clean data before each new uploads
         getAllProgress = [];
-        $rootScope.filesInformations = [];
-
+        FilesInformations = [];
+        progressContainer.empty();
         // for each file start an upload instance
         angular.forEach(arrayUpload, function(value, key) {
-
+          console.log(key);
           // bind to scope
           var valueProp = 'value' + key;
 
@@ -54,24 +58,25 @@
           // stock each object in an array to manipulate file's informations
           getAllProgress.push(0);
 
-          $rootScope.filesInformations.push({
-            'id' : key+1,
-            'progress' : 0,
-            'file': value,
-            'cancel' : true,
-            'progressdirective': directiveString,
-            'request' : new XMLHttpRequest()
-          });
+          var newFilesInformations = {
+              'id' : key+1,
+              'progress' : 0,
+              'file': value,
+              'cancel' : true,
+              'progressdirective': directiveString,
+              'request' : new XMLHttpRequest()
+          };
 
-          $scope[valueProp] = $rootScope.filesInformations[key];
-
-          progressContainer.append($rootScope.filesInformations[key].progressdirective);
-          $rootScope.filesInformations[key].cancel = true;
+          setFilesInformations(newFilesInformations);
+          $scope[valueProp] = newFilesInformations;
+          progressContainer.append(newFilesInformations.progressdirective);
+          newFilesInformations.cancel = true;
 
           // start upload deferred (get progress callback from deferred.notify)
           emitUploadFile(value,key);
 
         });
+
       }
 
       /**
@@ -82,8 +87,6 @@
        * @description Method called to update to the ready state
       */
       function startingInview(state, dragndrop,callback) {
-        // make sure to clean everything before start to prevent retry problems
-        $rootScope.filesInformations = [];
 
         if(dragndrop!=undefined){
           state.uploadtext = ' or drag and drop here';
@@ -162,28 +165,69 @@
 
       /**
        * @ngdoc service
+       * @name zlUploadService#getFilesInformations
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @description
+      */
+      function getFilesInformations(index){
+        return FilesInformations[index];
+      }
+
+      /**
+       * @ngdoc service
+       * @name zlUploadService#setFilesInformations
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @description
+      */
+      function setFilesInformations(object){
+        var index = FilesInformationsIndex[object.id];
+        if(index === undefined) {
+            index = FilesInformations.length;
+            FilesInformationsIndex[object.id] = index;
+        }
+        FilesInformations[index] = object;
+      }
+
+      /**
+       * @ngdoc service
        * @name zlUploadService#emitUploadFile
        * @methodOf 90Tech.zlUpload:zlUploadService
        * @param {File,Int} The file to upload & the index of filesInformations[]
        * @description Upload File & manage callback of the upload (done, error, progress)
       */
       function emitUploadFile(value,index){
-        uploadFile(value,$rootScope.filesInformations[index].request)
+        var progressContainer = angular.element(document.querySelector('.progress-container'));
+
+        uploadFile(value,getFilesInformations(index).request)
           .then(function(done) {
-            _.defer(function(){
-              $rootScope.filesInformations[index].progressdirective.remove();
-            });
+              //getFilesInformations(index).progressdirective.remove();
+              console.log(getFilesInformations(index).progressdirective);
           }, function(error) {
               console.log(error);
           },  function(progress) {
-            _.defer(function(){
-              $rootScope.filesInformations[index].progress = progress;
+              getFilesInformations(index).progress = progress;
               getAllProgress[index] = progress;
               calculateAverageProgress();
-              $rootScope.$apply();
-            });
           });
       }
+
+      // Create the XHR object.
+      function createCORSRequest(xhr,method, url) {
+        if ("withCredentials" in xhr) {
+          // XHR for Chrome/Firefox/Opera/Safari.
+          xhr.open(method, url, true);
+        } else if (typeof XDomainRequest != "undefined") {
+          // XDomainRequest for IE.
+          xhr = new XDomainRequest();
+          xhr.open(method, url);
+        } else {
+          // CORS not supported.
+          xhr = null;
+        }
+        return xhr;
+      }
+
+
 
       /**
        * @ngdoc service
@@ -198,6 +242,8 @@
         var deferred = $q.defer();
         console.log('start upload file');
 
+        //var xhr = createCORSRequest(xhrGetter,'POST', vm.url);
+
         xhr.upload.onprogress = function (e) {
               var percentCompleted;
               if (e.lengthComputable) {
@@ -207,9 +253,9 @@
                 }
               }
         };
-
-        xhr.onload = function (e) {
-          deferred.resolve(xhr.responseText);
+        xhr.onload = function() {
+          var text = xhr.responseText;
+          console.log(text);
         };
 
         xhr.upload.onerror = function (e) {
@@ -223,7 +269,13 @@
         if (data) {
           data.append("files", files);
         }
-        xhr.open("POST", vm.url);
+        xhr.open('POST', vm.url, true);
+        //xhr.setRequestHeader('Content-Type','undefined');
+
+        if (!xhr) {
+          alert('CORS not supported');
+          return;
+        }
         xhr.send(data);
         return deferred.promise;
       };

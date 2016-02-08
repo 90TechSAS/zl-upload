@@ -3,14 +3,35 @@ Lightweight Angularjs directive allowing to upload files.
 
 ## FileUpload
 **Parameters :**
- - `to` is the url for the upload
- - `multiple` allow to upload multiples files at the same time
- - `dragndrop` add the possibily to drag'n'drop files in a div
- - `autosubmit` auto submit files
+ - `zlf-to` is the url for the upload
+ - `zlf-max-files` if set, allow to upload x files maximum. The limit by default is 1 file max
+ - `zlf-max-size-mb` if set, provide a limit of size to the files accepted (in MB)
+ - `zlf-accept` if set, allow to filter files extensions
+ - `zlf-dragndrop` add the possibily to drag'n'drop files in a div
+ - `zlf-autosubmit` auto submit files
+
 
 Here an example on how to use a simple fileupload :
 
 `<div class="container"><zl-upload to="upload.php" dragndrop multiple></zl-upload></div>`
+
+## CORS NodeJS server implementation example
+      var express = require('express'),
+          cors = require('cors'),
+          port = process.env.PORT || 3000,
+          app = express();
+
+
+      var options = {
+        origin: true,
+        methods: ['POST']
+      };
+      app.options('/upload', cors(options));
+      app.post('/upload', cors(options), function(req, res){
+        res.json({
+          file: 'success !'
+        });
+      });
 
 ## Below a basic implementation of zl-upload
     <html ng-app="demo">
@@ -39,8 +60,6 @@ Here an example on how to use a simple fileupload :
 
 **TODO :**
  - todo.md
- - manage files extensions
+ - files extensions, still not implemented in drag & drop
  - truncate filename on progressbar
- - change the use of $rootScope by a service callback
  - create bower package
- - gh-pages instead of test folder.
