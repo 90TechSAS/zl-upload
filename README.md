@@ -13,7 +13,7 @@ Lightweight Angularjs directive allowing to upload files.
 
 Here an example on how to use a simple fileupload :
 
-`<div class="container"><zl-upload to="upload.php" dragndrop multiple></zl-upload></div>`
+`<zl-upload to="your-server-url" zlf-dragndrop zlf-max-files="2" zlf-max-size-mb="1" zlf-autosubmit></zl-upload>`
 
 ## CORS NodeJS server implementation example
       var express = require('express'),

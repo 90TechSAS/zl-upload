@@ -49,9 +49,10 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         zlfMaxFiles: '@',
         zlfMaxSizeMb: '@',
         zlfAccept: '@',
-        updateUploadView: '@'
+        updateUploadView: '@',
+        uploadToast: '@'
       },
-      template: '<div class="div-file-container {{zlfDragndrop}}"><p><zl-file-input ng-show="updateUploadView.starting.inview"></zl-file-input>                    {{uploadListenerText}}</p><zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container>                    <div class="progress-container" ng-show="updateUploadView.uploading.inview">                    </div><zl-progress-average class="progress-average-container" ng-show="updateUploadView.uploading.inview"></zl-progress-average></div>',
+      template: '<div class="div-file-container {{zlfDragndrop}}"><div class="toast-overlay" ng-show="uploadToast.inview"></div><p><zl-file-input ng-show="updateUploadView.starting.inview"></zl-file-input>                    {{uploadListenerText}}</p><zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container>                    <div class="progress-container" ng-show="updateUploadView.uploading.inview">                    </div><zl-progress-average ng-show="updateUploadView.uploading.inview"></zl-progress-average>                    <div class="toast-upload {{uploadToast.type}}" ng-show="uploadToast.inview">{{uploadToast.msg}}</div></div>',
       link: function link($scope, element, attrs, controller) {
 
         /********************************************
@@ -79,7 +80,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
           },
           done: {
             inview: false,
-            uploadtext: "files uploaded perfectly !"
+            uploadtext: "Every files are uploaded"
           }
         };
 
@@ -102,20 +103,18 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
             }
           });
         };
-
+        $scope.uploadToast = {};
         $scope.progressAverage = 0;
         $scope.showProgressAverage = false;
 
-        // callback updating the progressbar average
-        $scope.updateProgressAverage = function (progress) {
+        $scope.setUploadToast = function (type, msg) {
           _.defer(function () {
-            $scope.progressAverage = progress;
-            if (angular.equals(progress, 100) && !angular.equals(progress, 0)) {
-              zlUploadService.doneInview($scope.updateUploadView.done, $scope.updateInView);
-              $timeout(function () {
-                zlUploadService.startingInview($scope.updateUploadView.starting, $scope.zlfDragndrop, $scope.updateInView);
-              }, 1500);
-            }
+            $scope.uploadToast.inview = true;
+            $scope.uploadToast.msg = msg;
+            $scope.uploadToast.type = type;
+            $timeout(function () {
+              $scope.uploadToast.inview = false;
+            }, 2000);
             $scope.$apply();
           });
         };
@@ -185,7 +184,6 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
             dropdiv.removeClass('dragover');
 
             var files = e.dataTransfer.files;
-            console.log(files[0].type);
 
             // boolean to check if user is dropping more than 1 file
             var dropMultipleFiles = files.length > 1;
@@ -205,9 +203,11 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         function callServiceUpload(filesGetter) {
 
           var ExceedLimit = [];
+          var acceptRegex = $scope.zlfAccept.split(',').join('|');
+          var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + acceptRegex + ")$");
 
           if (filesGetter.length > $scope.zlfMaxFiles) {
-            console.log('Cannot upload ' + filesGetter.length + ' files, maxium allowed is ' + $scope.zlfMaxFiles);
+            $scope.setUploadToast('danger', 'Cannot upload ' + filesGetter.length + ' files, maximum is ' + $scope.zlfMaxFiles);
             return;
           }
           for (var i = 0; i < $scope.zlfMaxFiles; i++) {
@@ -216,10 +216,14 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
             if (file.size > $scope.zlfMaxSizeMb * 1048576) {
               ExceedLimit.push(file);
             }
+            if (!regex.test(filesGetter[0].name.toLowerCase())) {
+              $scope.setUploadToast('danger', 'Extensions allowed : ' + $scope.zlfAccept + ' only.');
+              return;
+            }
           }
 
           if (ExceedLimit.length > 0) {
-            console.log('Files are larger than the specified max (' + $scope.zlfMaxSizeMb + 'MB)');
+            $scope.setUploadToast('danger', 'Files are larger than the specified max (' + $scope.zlfMaxSizeMb + 'MB)');
             return;
           }
 
@@ -263,7 +267,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         fileData: '='
       },
       template: function template() {
-        var htmlText = "<div class='progress-bar'><div style='width:{{fileData.progress}}%;' class='progress-bar-bar'></div><div class='progress-state'>{{fileData.file.name}} : {{fileData.progress}} %</div><zl-cancel-retry id='zl-cancel-retry-{{fileData.id}}'></zl-cancel-retry>";
+        var htmlText = "<div class='progress-bar'><div style='width:{{fileData.progress}}%;' class='progress-bar-bar'></div><div class='progress-state'>{{fileData.file.name| limitTo : 20}} : {{fileData.progress}} %</div><zl-cancel-retry id='zl-cancel-retry-{{fileData.id}}'></zl-cancel-retry>";
         return htmlText;
       },
       link: function link($scope, element, attrs) {
@@ -287,7 +291,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
   function zlProgressAverage($timeout, zlUploadService) {
     return {
       restrict: 'EA',
-      template: "<div class='progress-bar average-progress-bar'><div style='width:{{progressAverage}}%;' class='progress-bar-bar'></div><div class='progress-state'>{{progressAverage}}%<div>",
+      template: "<div><div class='progress-bar average-progress-bar'><div style='width:{{progressAverage}}%;' class='progress-bar-bar'></div></div><div class='progress-average-state'>{{progressAverage}}%<div>",
       link: function link($scope, element, attrs) {
         $scope.progressAverage = 0;
         $scope.showProgressAverage = false;
@@ -299,7 +303,9 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
           _.defer(function () {
             if (angular.equals(newValue, 100) && !angular.equals(newValue, 0)) {
               zlUploadService.doneInview($scope.updateUploadView.done, $scope.updateInView);
+              $scope.setUploadToast('success', 'Files uploaded perfectly !');
               $timeout(function () {
+                $scope.progressAverage = 0;
                 zlUploadService.startingInview($scope.updateUploadView.starting, $scope.zlfDragndrop, $scope.updateInView);
               }, 1500);
             } else {
@@ -438,7 +444,6 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       progressContainer.empty();
       // for each file start an upload instance
       angular.forEach(arrayUpload, function (value, key) {
-        console.log(key);
         // bind to scope
         var valueProp = 'value' + key;
 
@@ -582,11 +587,9 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
      * @description Upload File & manage callback of the upload (done, error, progress)
     */
     function emitUploadFile(value, index) {
-      var progressContainer = angular.element(document.querySelector('.progress-container'));
 
       uploadFile(value, getFilesInformations(index).request).then(function (done) {
         //getFilesInformations(index).progressdirective.remove();
-        console.log(getFilesInformations(index).progressdirective);
       }, function (error) {
         console.log(error);
       }, function (progress) {
@@ -623,7 +626,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
       //var xhr = $rootScope.filesInformations[index].request;
       var deferred = $q.defer();
-      console.log('start upload file');
+      //console.log('start upload file');
 
       //var xhr = createCORSRequest(xhrGetter,'POST', vm.url);
 
@@ -638,7 +641,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       };
       xhr.onload = function () {
         var text = xhr.responseText;
-        console.log(text);
+        //console.log(text);
       };
 
       xhr.upload.onerror = function (e) {

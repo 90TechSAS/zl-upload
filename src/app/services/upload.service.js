@@ -48,7 +48,6 @@
         progressContainer.empty();
         // for each file start an upload instance
         angular.forEach(arrayUpload, function(value, key) {
-          console.log(key);
           // bind to scope
           var valueProp = 'value' + key;
 
@@ -196,12 +195,10 @@
        * @description Upload File & manage callback of the upload (done, error, progress)
       */
       function emitUploadFile(value,index){
-        var progressContainer = angular.element(document.querySelector('.progress-container'));
 
         uploadFile(value,getFilesInformations(index).request)
           .then(function(done) {
               //getFilesInformations(index).progressdirective.remove();
-              console.log(getFilesInformations(index).progressdirective);
           }, function(error) {
               console.log(error);
           },  function(progress) {
@@ -240,7 +237,7 @@
 
         //var xhr = $rootScope.filesInformations[index].request;
         var deferred = $q.defer();
-        console.log('start upload file');
+        //console.log('start upload file');
 
         //var xhr = createCORSRequest(xhrGetter,'POST', vm.url);
 
@@ -255,7 +252,7 @@
         };
         xhr.onload = function() {
           var text = xhr.responseText;
-          console.log(text);
+          //console.log(text);
         };
 
         xhr.upload.onerror = function (e) {

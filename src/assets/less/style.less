@@ -14,7 +14,7 @@ body{
 	width: 100px;
 	position: absolute;
   left: 0px;
-  background-color:#3F51B5;
+  background-color:#03A9F4;
   color:#FFFFFF;
 	box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
 	font-weight: 600;
@@ -41,26 +41,34 @@ body{
 /* progressbar style */
 .progress-bar {
 	color:#fafafa;
-  background-color: #81D4FA;
+  background-color: #81C784;
   position:relative;
   height: 25px;
   margin: 5px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 .progress-bar-bar {
   width: 0px;
-  background-color: #03A9F4;
+  background-color: #4CAF50;
   height: 100%;
   position: absolute;
   top: 0px;
 }
 .average-progress-bar{
-	background-color: #80CBC4;
-  height: 30px;
-	.progress-bar-bar {
-	  background-color: #009688;
-	}
+	position: absolute;
+	bottom:0px;
+	left:0px;
+  height: 5px;
+	margin:0px;
+	width:100%;
 }
-
+.progress-average-state{
+	position: absolute;
+  right: 15px;
+  bottom: 15px;
+}
 
 .progress-state {
 	position: absolute;
@@ -82,6 +90,7 @@ body{
 	cursor: pointer;
 	color:#212121;
 }
+
 
 
 /* container style */
@@ -116,18 +125,26 @@ body{
 		}
 		zl-cancel-button,zl-retry-button{
 			position:absolute;
-			right:1px;
+			right:0px;
 			top:0px;
 			button{
-				line-height: 20px;
+				line-height: 23px;
+				border-radius:0px;
+				box-shadow: none;
+				font-weight: 700;
+				background-color:transparent;
+				cursor:pointer;
+
+				&:active {
+		      box-shadow: none;
+		    }
 			}
 		}
 		.cancel-upload-button{
-			background-color:#db4437;
-			color:#fff;
+			color:#db4437;
 		}
 		.retry-upload-button{
-			background-color:#eee;
+			color:#eee;
 		}
 		strong{
 			font-size:1.2rem;
@@ -140,8 +157,6 @@ body{
 			line-height: 32px;
 			border-radius: 2px;
 			font-size: 0.9em;
-			background-color: #fff;
-			color: #646464;
 			transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 			transition-delay: 0.2s;
 			box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
@@ -150,4 +165,36 @@ body{
 		      transition-delay: 0s;
 		    }
 		}
+}
+
+.toast-upload{
+	border-radius: 2px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+	padding: 5px;
+	position: absolute;
+	top: 50%;
+	margin-top: -16px;
+	opacity: 0.9;
+	font-size: 1rem;
+	color: #FFFFFF;
+	left: 50%;
+	margin-left: -170px;
+	width: 330px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	&.danger{
+		background-color: #F44336;
+	}
+	&.success{
+		background-color: #4CAF50;
+	}
+}
+.toast-overlay{
+	position: absolute;
+	background-color: rgba(0,0,0,0.3);
+	width: 100%;
+	height: 100%;
+	top: 0px;
+	left: 0px;
 }

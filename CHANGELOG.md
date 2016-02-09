@@ -1,5 +1,17 @@
 # Change Log
 
+0.9.2 / 2016-02-09
+==================
+
+### Added
+ * Toast notification system
+ * Truncate filename in view with limitTo filter
+ * `zlf-accept` 100% functional
+
+### Changed
+ * Updated Stylesheet
+
+
 0.9.1 / 2016-02-08
 ==================
 
