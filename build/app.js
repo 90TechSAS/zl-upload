@@ -29,7 +29,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
   'use strict';
 
   zlSubmitButton.$inject = ["$q", "zlUploadService"];
-  zlProgressBar.$inject = ["$q", "zlUploadService"];
+  zlProgressBar.$inject = ["$compile", "$q", "zlUploadService"];
   zlProgressAverage.$inject = ["$timeout", "zlUploadService"];
   zlCancelRetry.$inject = ["$q", "$compile", "zlUploadService"];
   zlCancelButton.$inject = ["$q", "zlUploadService"];
@@ -50,9 +50,9 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         zlfMaxSizeMb: '@',
         zlfAccept: '@',
         updateUploadView: '@',
-        uploadToast: '@'
+        zlfCustomSubContainer: '@'
       },
-      template: '<div class="div-file-container {{zlfDragndrop}}"><div class="toast-overlay" ng-show="uploadToast.inview"></div><p><zl-file-input ng-show="updateUploadView.starting.inview"></zl-file-input>                    {{uploadListenerText}}</p><zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container>                    <div class="progress-container" ng-show="updateUploadView.uploading.inview">                    </div><zl-progress-average ng-show="updateUploadView.uploading.inview"></zl-progress-average>                    <div class="toast-upload {{uploadToast.type}}" ng-show="uploadToast.inview">{{uploadToast.msg}}</div></div>',
+      template: '<div class="zlf-container"><div class="zlf-sub-container {{zlfDragndrop}} {{zlfCustomSubContainer}}">                    <span class="zlf-cloud-icon" ng-class="{\'done\' : updateUploadView.done.inview,\'uploading\' : updateUploadView.uploading.inview }" ng-show="!updateUploadView.starting.inview"></span>                    <zlf-file-input-el ng-show="updateUploadView.starting.inview"></zlf-file-input-el><svg ng-show="updateUploadView.uploading.inview" height="80px" viewBox="0 0 187.3 93.7" preserveAspectRatio="xMidYMid meet">\n  <path stroke="#616161" id="outline" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10"\n        d="M93.9,46.4c9.3,9.5,13.8,17.9,23.5,17.9s17.5-7.8,17.5-17.5s-7.8-17.6-17.5-17.5c-9.7,0.1-13.3,7.2-22.1,17.1 \t\t\t\tc-8.9,8.8-15.7,17.9-25.4,17.9s-17.5-7.8-17.5-17.5s7.8-17.5,17.5-17.5S86.2,38.6,93.9,46.4z" />\n  <path id="outline-bg" opacity="0.09" fill="none" stroke="#ededed" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10"\n        d="\t\t\t\tM93.9,46.4c9.3,9.5,13.8,17.9,23.5,17.9s17.5-7.8,17.5-17.5s-7.8-17.6-17.5-17.5c-9.7,0.1-13.3,7.2-22.1,17.1 \t\t\t\tc-8.9,8.8-15.7,17.9-25.4,17.9s-17.5-7.8-17.5-17.5s7.8-17.5,17.5-17.5S86.2,38.6,93.9,46.4z" />\n\t\t\t\t</svg>{{uploadListenerText}}</div>                    <zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container>                    <div class="zlf-items-container" ng-show="updateUploadView.uploading.inview">                    </div><zl-progress-average ng-show="updateUploadView.uploading.inview"></zl-progress-average>                    </div>',
       link: function link($scope, element, attrs, controller) {
 
         /********************************************
@@ -63,24 +63,30 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         var inputfile = '';
         var multiple = '';
         var accept = '';
-        var zlFileInputText = 'Choose a file';
+        var zlFileInputText = '';
 
         $scope.updateUploadView = {
           starting: {
             inview: false,
-            uploadtext: 'or drag and drop here'
+            uploadtext: ''
           },
           ready: {
             inview: false,
-            uploadtext: "files selected"
+            uploadtext: 'files selected'
           },
           uploading: {
             inview: false,
-            uploadtext: "files are getting uploaded"
+            uploadtext: ''
           },
           done: {
             inview: false,
-            uploadtext: "Every files are uploaded"
+            'class': 'success',
+            uploadtext: 'Every files are uploaded'
+          },
+          error: {
+            inview: false,
+            'class': 'error',
+            uploadtext: ''
           }
         };
 
@@ -93,6 +99,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
               _.defer(function () {
                 element.inview = true;
                 $scope.uploadListenerText = state.uploadtext;
+                $scope.zlfCustomSubContainer = '';
                 $scope.$apply();
               });
             } else {
@@ -103,6 +110,33 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
             }
           });
         };
+
+        // callback updating the view + custom message
+        $scope.updateInViewCustom = function (state, msg) {
+          angular.forEach($scope.updateUploadView, function (element, key) {
+            // allow to hide others views that aren't needed & show the message
+            if (element == state) {
+              console.log(state);
+
+              _.defer(function () {
+                element.inview = true;
+                $scope.uploadListenerText = msg;
+                $scope.zlfCustomSubContainer = state['class'];
+                $timeout(function () {
+                  $scope.progressAverage = 0;
+                  zlUploadService.startingInview($scope.updateUploadView.starting, $scope.zlfDragndrop, $scope.updateInView);
+                }, 1500);
+                $scope.$apply();
+              });
+            } else {
+              _.defer(function () {
+                element.inview = false;
+                $scope.$apply();
+              });
+            }
+          });
+        };
+
         $scope.uploadToast = {};
         $scope.progressAverage = 0;
         $scope.showProgressAverage = false;
@@ -135,13 +169,13 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
         if (attrs.zlfMaxFiles == undefined) {
           $scope.zlfMaxFiles = 1;
-          zlFileInputText = 'Choose your file';
+          zlFileInputText = 'UPLOAD FILE';
         } else {
           multiple = 'multiple';
-          zlFileInputText = 'Choose your files';
+          zlFileInputText = 'UPLOAD FILES';
         }
 
-        element.find('zl-file-input').append($compile('<input class="custom-input-file" id="file" type="file" accept="' + accept + '" ' + multiple + '/><label for="file"><strong>' + zlFileInputText + '</strong></label>')($scope));
+        element.find('zlf-file-input-el').append($compile('<input class="zlf-file-input" id="file" type="file" accept="' + accept + '" ' + multiple + '/><label for="file"><strong><span class="zlf-cloud-icon"></span>' + zlFileInputText + '</strong></label>')($scope));
 
         // method called to update the view on the state starting
         zlUploadService.startingInview($scope.updateUploadView.starting, attrs.zlfDragndrop, $scope.updateInView);
@@ -199,15 +233,29 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
             }
           });
         }
+        function extensionTest(file) {
+          var extensionIsSet = attrs.zlfAccept != undefined && attrs.zlfAccept != '*';
+          if (extensionIsSet) {
+            var acceptRegex = $scope.zlfAccept.split(',').join('|');
+            var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + acceptRegex + ")$");
+            if (!regex.test(file.name.toLowerCase())) {
+              zlUploadService.errorInview($scope.updateUploadView.error, 'Extensions allowed : ' + $scope.zlfAccept + ' only.', $scope.updateInViewCustom);
+              return true;
+            } else {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        }
+
         // call the upload service
         function callServiceUpload(filesGetter) {
 
           var ExceedLimit = [];
-          var acceptRegex = $scope.zlfAccept.split(',').join('|');
-          var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + acceptRegex + ")$");
 
           if (filesGetter.length > $scope.zlfMaxFiles) {
-            $scope.setUploadToast('danger', 'Cannot upload ' + filesGetter.length + ' files, maximum is ' + $scope.zlfMaxFiles);
+            zlUploadService.errorInview($scope.updateUploadView.error, 'Cannot upload ' + filesGetter.length + ' files, maximum is ' + $scope.zlfMaxFiles, $scope.updateInViewCustom);
             return;
           }
           for (var i = 0; i < $scope.zlfMaxFiles; i++) {
@@ -216,14 +264,13 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
             if (file.size > $scope.zlfMaxSizeMb * 1048576) {
               ExceedLimit.push(file);
             }
-            if (!regex.test(filesGetter[0].name.toLowerCase())) {
-              $scope.setUploadToast('danger', 'Extensions allowed : ' + $scope.zlfAccept + ' only.');
+            if (extensionTest(filesGetter[i])) {
               return;
             }
           }
 
           if (ExceedLimit.length > 0) {
-            $scope.setUploadToast('danger', 'Files are larger than the specified max (' + $scope.zlfMaxSizeMb + 'MB)');
+            zlUploadService.errorInview($scope.updateUploadView.error, 'Files are larger than the specified max (' + $scope.zlfMaxSizeMb + 'MB)', $scope.updateInViewCustom);
             return;
           }
 
@@ -248,7 +295,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
   function zlSubmitButton($q, zlUploadService) {
     return {
       restrict: 'E',
-      template: '<button class="zl-submit-file" ng-click="clickToSubmit();">Upload</button>',
+      template: '<button class="zlf-file-submit" ng-click="clickToSubmit();">Upload</button>',
       link: function link($scope, element, attrs) {
         $scope.clickToSubmit = function () {
           zlUploadService.uploadingInview($scope.updateUploadView.uploading, $scope, $scope.updateInView);
@@ -260,26 +307,35 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
   /* progressbar directive. Parent : zlUploadFile/zlUploadDragAndDrop */
   angular.module('90Tech.zlUpload').directive('zlProgressBar', zlProgressBar);
 
-  function zlProgressBar($q, zlUploadService) {
+  function zlProgressBar($compile, $q, zlUploadService) {
     return {
       restrict: 'EA',
       scope: {
         fileData: '='
       },
       template: function template() {
-        var htmlText = "<div class='progress-bar'><div style='width:{{fileData.progress}}%;' class='progress-bar-bar'></div><div class='progress-state'>{{fileData.file.name| limitTo : 20}} : {{fileData.progress}} %</div><zl-cancel-retry id='zl-cancel-retry-{{fileData.id}}'></zl-cancel-retry>";
+        var htmlText = '<div><div class="zlf-file-item" filetype="{{fileData.file.name.split(\'.\').pop()}}"><span class="file-corner"></span></div>                          <div class=\'zlf-content-item\'>{{fileData.file.name| limitTo : 20}}<div class=\'progress-state\'>           {{fileData.progress.uploaded}}/{{fileData.size}} ({{fileData.progress.upspeed}}/sec)</div></div><zl-cancel-retry class="zlf-item-btn-container" id=\'zl-cancel-retry-{{fileData.id}}\'></zl-cancel-retry>';
         return htmlText;
       },
       link: function link($scope, element, attrs) {
         $scope.$watch(function () {
           return $scope.fileData.progress;
         }, function (newValue) {
-          if (angular.equals(newValue, 100)) {
-            _.defer(function () {
-              angular.element(document.querySelector('#zl-cancel-retry-' + $scope.fileData.id)).empty();
-              $scope.$apply();
-            });
+          if (angular.equals(newValue.percentCompleted, 100)) {
+            var btn = angular.element(document.querySelector('#zl-cancel-retry-' + $scope.fileData.id));
+            var e = $compile('<button class=\'zlf-btn-upload zlf-btn-success\' ng-disabled=\'true\'></button>')($scope);
+            btn.empty();
+            btn.append(e);
           }
+          // if(newValue.upspeed==undefined){
+          //   $scope.fileData.upspeed = 0;
+          // }
+          // if (angular.equals(newValue.percentCompleted, 100)) {
+          //     _.defer(function(){
+          //       angular.element(document.querySelector('#zl-cancel-retry-'+$scope.fileData.id)).empty();
+          //       $scope.$apply();
+          //     });
+          // }
         }, true);
       }
     };
@@ -291,7 +347,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
   function zlProgressAverage($timeout, zlUploadService) {
     return {
       restrict: 'EA',
-      template: "<div><div class='progress-bar average-progress-bar'><div style='width:{{progressAverage}}%;' class='progress-bar-bar'></div></div><div class='progress-average-state'>{{progressAverage}}%<div>",
+      template: "<div class='zlf-progress-average'><div style='width:{{progressAverage}}%;' class='zlf-progress-bar'></div></div>",
       link: function link($scope, element, attrs) {
         $scope.progressAverage = 0;
         $scope.showProgressAverage = false;
@@ -299,11 +355,9 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         $scope.$watch(function () {
           return zlUploadService.getAverageProgress();
         }, function (newValue) {
-
           _.defer(function () {
             if (angular.equals(newValue, 100) && !angular.equals(newValue, 0)) {
-              zlUploadService.doneInview($scope.updateUploadView.done, $scope.updateInView);
-              $scope.setUploadToast('success', 'Files uploaded perfectly !');
+              zlUploadService.doneInview($scope.updateUploadView.done, $scope.updateInViewCustom);
               $timeout(function () {
                 $scope.progressAverage = 0;
                 zlUploadService.startingInview($scope.updateUploadView.starting, $scope.zlfDragndrop, $scope.updateInView);
@@ -356,7 +410,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
   function zlCancelButton($q, zlUploadService) {
     return {
       restrict: 'E',
-      template: "<button class='cancel-upload-button' ng-click='uploadCancel();'>cancel</button>",
+      template: "<button class='zlf-btn-upload zlf-btn-cancel' ng-click='uploadCancel();'></button>",
       link: function link($scope, element, attrs) {
 
         // cancel upload button listener
@@ -377,7 +431,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
   function zlRetryButton($q, zlUploadService) {
     return {
       restrict: 'E',
-      template: "<button class='retry-upload-button' ng-click='uploadRetry();'>retry</button>",
+      template: "<button class='zlf-btn-upload zlf-btn-retry' ng-click='uploadRetry();'></button>",
       link: function link($scope, element, attrs) {
         // by default, hide cancel button
 
@@ -436,7 +490,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
     function upload($scope) {
       var slice = Array.prototype.slice;
       var arrayUpload = slice.call(vm.getFiles());
-      var progressContainer = angular.element(document.querySelector('.progress-container'));
+      var progressContainer = angular.element(document.querySelector('.zlf-items-container'));
 
       // clean data before each new uploads
       getAllProgress = [];
@@ -444,19 +498,27 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       progressContainer.empty();
       // for each file start an upload instance
       angular.forEach(arrayUpload, function (value, key) {
+        console.log(key);
         // bind to scope
         var valueProp = 'value' + key;
 
         // create a directive for each upload & append it to the main directive (need $apply to update view)
-        var directiveString = $compile('<zl-progress-bar file-data=' + valueProp + '></zl-progress-bar></div>')($scope);
+        var directiveString = $compile('<zl-progress-bar class="zlf-item-container" file-data=' + valueProp + '></zl-progress-bar></div>')($scope);
 
         // stock each object in an array to manipulate file's informations
         getAllProgress.push(0);
 
+        var i = Math.floor(Math.log(value.size) / Math.log(1024));
+
+        var sizes = ['Bytes', 'Kb', 'Mb', 'Gb'];
+
+        var size = (value.size / Math.pow(1024, i)).toPrecision(3) + ' ' + sizes[i];
+
         var newFilesInformations = {
           'id': key + 1,
-          'progress': 0,
+          'progress': {},
           'file': value,
+          'size': size,
           'cancel': true,
           'progressdirective': directiveString,
           'request': new XMLHttpRequest()
@@ -482,7 +544,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
     function startingInview(state, dragndrop, callback) {
 
       if (dragndrop != undefined) {
-        state.uploadtext = ' or drag and drop here';
+        state.uploadtext = '';
       } else {
         state.uploadtext = '';
       }
@@ -501,6 +563,18 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       state.uploadtext = ' ' + vm.getFiles().length + ' files selected';
       state.inview = true;
       callback(state);
+    }
+
+    /**
+     * @ngdoc service
+     * @name zlUploadService#errorInview
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @param {Object,Function} The Object file & the directive's function callback
+     * @description Method called to show error
+    */
+    function errorInview(state, msg, callback) {
+      state.inview = true;
+      callback(state, msg);
     }
 
     /**
@@ -527,7 +601,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
     */
     function doneInview(state, callback) {
       state.inview = true;
-      callback(state);
+      callback(state, state.uploadtext);
     }
 
     /**
@@ -587,14 +661,42 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
      * @description Upload File & manage callback of the upload (done, error, progress)
     */
     function emitUploadFile(value, index) {
+      var progressContainer = angular.element(document.querySelector('.zlf-items-container'));
+      var percentCompleted;
+      var uploadedUpSpeed = 0;
+      var lastUpTime = 0;
+      var sizes = ['Bytes', 'Kb', 'Mb', 'Gb'];
 
       uploadFile(value, getFilesInformations(index).request).then(function (done) {
         //getFilesInformations(index).progressdirective.remove();
+        console.log(getFilesInformations(index).progressdirective);
       }, function (error) {
         console.log(error);
-      }, function (progress) {
-        getFilesInformations(index).progress = progress;
-        getAllProgress[index] = progress;
+      }, function (e) {
+        var endTime = new Date().getTime();
+        var upspeed = (e.loaded - uploadedUpSpeed) * 1000 / (endTime - lastUpTime);
+        var i = Math.floor(Math.log(e.loaded) / Math.log(1024));
+        var ispeed = Math.floor(Math.log(upspeed) / Math.log(1024));
+        percentCompleted = Math.round(e.loaded / e.total * 100);
+
+        getFilesInformations(index).progress.percentCompleted = percentCompleted;
+
+        if (e.loaded > 0) {
+          getFilesInformations(index).progress.uploaded = (e.loaded / Math.pow(1024, i)).toPrecision(3) + ' ' + sizes[i];
+        } else {
+          getFilesInformations(index).progress.uploaded = "0 Kb";
+        }
+
+        if (upspeed > 0 && ispeed > 0) {
+          getFilesInformations(index).progress.upspeed = (upspeed / Math.pow(1024, ispeed)).toPrecision(3) + ' ' + sizes[ispeed];
+        } else {
+          getFilesInformations(index).progress.upspeed = "0 Kb";
+        }
+
+        uploadedUpSpeed = e.loaded;
+        lastUpTime = endTime;
+
+        getAllProgress[index] = percentCompleted;
         calculateAverageProgress();
       });
     }
@@ -626,22 +728,20 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
       //var xhr = $rootScope.filesInformations[index].request;
       var deferred = $q.defer();
-      //console.log('start upload file');
+      console.log('start upload file');
 
       //var xhr = createCORSRequest(xhrGetter,'POST', vm.url);
 
       xhr.upload.onprogress = function (e) {
-        var percentCompleted;
         if (e.lengthComputable) {
-          percentCompleted = Math.round(e.loaded / e.total * 100);
           if (deferred.notify) {
-            deferred.notify(percentCompleted);
+            deferred.notify(e);
           }
         }
       };
       xhr.onload = function () {
         var text = xhr.responseText;
-        //console.log(text);
+        console.log(text);
       };
 
       xhr.upload.onerror = function (e) {
@@ -724,6 +824,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       startingInview: startingInview,
       uploadingInview: uploadingInview,
       doneInview: doneInview,
+      errorInview: errorInview,
       getFiles: getFiles,
       getAllProgress: getAllProgress,
       setFiles: setFiles,
