@@ -40,7 +40,7 @@
       function upload($scope){
         var slice = Array.prototype.slice;
         var arrayUpload = slice.call(vm.getFiles());
-        var progressContainer = angular.element(document.querySelector('.progress-container'));
+        var progressContainer = angular.element(document.querySelector('.zlf-items-container'));
 
         // clean data before each new uploads
         getAllProgress = [];
@@ -48,19 +48,27 @@
         progressContainer.empty();
         // for each file start an upload instance
         angular.forEach(arrayUpload, function(value, key) {
+          console.log(key);
           // bind to scope
           var valueProp = 'value' + key;
 
           // create a directive for each upload & append it to the main directive (need $apply to update view)
-          var directiveString = $compile('<zl-progress-bar file-data=' + valueProp + '></zl-progress-bar></div>')($scope);
+          var directiveString = $compile('<zl-progress-bar class="zlf-item-container" file-data=' + valueProp + '></zl-progress-bar></div>')($scope);
 
           // stock each object in an array to manipulate file's informations
           getAllProgress.push(0);
 
+          var i = Math.floor(Math.log(value.size) / Math.log(1024));
+
+          var sizes = ['Bytes', 'Kb', 'Mb', 'Gb'];
+
+          var size = (value.size / Math.pow(1024, i)).toPrecision(3) + ' ' + sizes[i];
+
           var newFilesInformations = {
               'id' : key+1,
-              'progress' : 0,
+              'progress' : {},
               'file': value,
+              'size': size,
               'cancel' : true,
               'progressdirective': directiveString,
               'request' : new XMLHttpRequest()
@@ -88,7 +96,7 @@
       function startingInview(state, dragndrop,callback) {
 
         if(dragndrop!=undefined){
-          state.uploadtext = ' or drag and drop here';
+          state.uploadtext = '';
         }else{
           state.uploadtext = '';
         }
@@ -107,6 +115,18 @@
         state.uploadtext = ' ' + vm.getFiles().length + ' files selected';
         state.inview = true;
         callback(state);
+      }
+
+      /**
+       * @ngdoc service
+       * @name zlUploadService#errorInview
+       * @methodOf 90Tech.zlUpload:zlUploadService
+       * @param {Object,Function} The Object file & the directive's function callback
+       * @description Method called to show error
+      */
+      function errorInview(state,msg,callback) {
+        state.inview = true;
+        callback(state,msg);
       }
 
 
@@ -134,7 +154,7 @@
       */
       function doneInview(state,callback) {
           state.inview = true;
-          callback(state);
+          callback(state,state.uploadtext);
       }
 
 
@@ -195,15 +215,43 @@
        * @description Upload File & manage callback of the upload (done, error, progress)
       */
       function emitUploadFile(value,index){
+        var progressContainer = angular.element(document.querySelector('.zlf-items-container'));
+        var percentCompleted;
+        var uploadedUpSpeed = 0;
+        var lastUpTime = 0;
+        var sizes = ['Bytes', 'Kb', 'Mb', 'Gb'];
 
         uploadFile(value,getFilesInformations(index).request)
           .then(function(done) {
               //getFilesInformations(index).progressdirective.remove();
+              console.log(getFilesInformations(index).progressdirective);
           }, function(error) {
               console.log(error);
-          },  function(progress) {
-              getFilesInformations(index).progress = progress;
-              getAllProgress[index] = progress;
+          },  function(e) {
+              var endTime = (new Date()).getTime();
+              var upspeed = ((e.loaded - uploadedUpSpeed) * 1000) / ((endTime - lastUpTime));
+              var i = Math.floor(Math.log(e.loaded) / Math.log(1024));
+              var ispeed = Math.floor(Math.log(upspeed) / Math.log(1024));
+              percentCompleted = Math.round(e.loaded / e.total * 100);
+
+              getFilesInformations(index).progress.percentCompleted = percentCompleted;
+
+              if(e.loaded>0){
+                getFilesInformations(index).progress.uploaded = (e.loaded / Math.pow(1024, i)).toPrecision(3) + ' ' + sizes[i];
+              }else{
+                getFilesInformations(index).progress.uploaded = "0 Kb";
+              }
+
+              if(upspeed>0 && ispeed>0){
+                getFilesInformations(index).progress.upspeed = (upspeed / Math.pow(1024, ispeed)).toPrecision(3) + ' ' + sizes[ispeed];
+              }else{
+                getFilesInformations(index).progress.upspeed = "0 Kb";
+              }
+
+              uploadedUpSpeed = e.loaded;
+              lastUpTime = endTime;
+
+              getAllProgress[index] = percentCompleted;
               calculateAverageProgress();
           });
       }
@@ -237,22 +285,20 @@
 
         //var xhr = $rootScope.filesInformations[index].request;
         var deferred = $q.defer();
-        //console.log('start upload file');
+        console.log('start upload file');
 
         //var xhr = createCORSRequest(xhrGetter,'POST', vm.url);
 
         xhr.upload.onprogress = function (e) {
-              var percentCompleted;
               if (e.lengthComputable) {
-                percentCompleted = Math.round(e.loaded / e.total * 100);
                 if (deferred.notify) {
-                  deferred.notify(percentCompleted);
+                  deferred.notify(e);
                 }
               }
         };
         xhr.onload = function() {
           var text = xhr.responseText;
-          //console.log(text);
+          console.log(text);
         };
 
         xhr.upload.onerror = function (e) {
@@ -336,6 +382,7 @@
         startingInview:startingInview,
         uploadingInview:uploadingInview,
         doneInview:doneInview,
+        errorInview:errorInview,
         getFiles:getFiles,
         getAllProgress:getAllProgress,
         setFiles:setFiles,

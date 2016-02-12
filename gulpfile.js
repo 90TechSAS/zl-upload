@@ -63,10 +63,22 @@ gulp.task('less', function () {
         .pipe(gulp.dest('./src/assets/css/'));
 });
 
+gulp.task('less2', function () {
+    gulp.src('./src/assets/less/styleV2.less')
+        .pipe(less().on('error', util.log))
+        .pipe(concat('style.css'))
+        .pipe(minifyCSS())
+        .pipe(rename('styleV2.min.css'))
+        .pipe(gulp.dest('./src/assets/css/'));
+});
+
+
+
 gulp.task('watch', function(){
     gulp.watch(['./src/app/**/*.js'], ['commonjs-bundle']);
     gulp.watch(['./src/app/**/**/*.js'], ['commonjs-bundle']);
     gulp.watch(['./src/assets/less/style.less'],['less']);
+    gulp.watch(['./src/assets/less/styleV2.less'],['less2']);
 });
 
 gulp.task('default', ['commonjs-bundle']);

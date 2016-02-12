@@ -1,5 +1,22 @@
 # Change Log
 
+0.9.8 / 2016-02-12
+==================
+
+### Added
+ * Upload speed
+ * File size
+ * Current size uploaded on progress
+ * Loading svg animation
+
+### Changed
+ * Replaced the stylesheet
+ * Fixed `zlf-accept` problems
+
+### Removed
+ * Toast notification system
+
+
 0.9.2 / 2016-02-09
 ==================
 

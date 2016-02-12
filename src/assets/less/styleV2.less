@@ -1,0 +1,244 @@
+body{
+	// prevent button select
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	-webkit-touch-callout: none;
+}
+
+
+.zlf-container{
+  box-shadow: 0 8px 17px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+	height:260px;
+	background-color:#616161;
+	font-size: 0.9rem;
+	min-width: 420px;
+	color:#F4F4F4;
+	&zl-progress-bar{
+		display:block;
+		height:80px;
+	}
+}
+
+// zl-fileupload sub container
+.zlf-sub-container{
+	background-color:#29B6F6;
+	text-align: center;
+	padding: 15px;
+	color:#616161;
+	font-size: 1rem;
+	font-weight:700;
+	height:70px;
+	text-transform: uppercase;
+	-webkit-transition: background .3s ease-out, font-size .3s ease-out;
+	transition: background .3s ease-out, font-size .3s ease-out;
+	&.error{
+		background-color:#EF5350;
+		font-size: 0.8rem;
+	}
+	&.success{
+		background-color:#9CCC65;
+		font-size: 0.8rem;
+	}
+	&.drop-div {
+	  // outline: 2px dashed rgba(0,0,0,.2);
+		// outline-color: #616161;
+	  // outline-offset: -10px;
+    // transition: color .2s ease-in-out,outline-color .2s ease-in-out;
+	}
+	&.dragover {
+	  // outline-color: #03A9F4;
+	  // color: #03A9F4;
+	}
+	.zlf-cloud-icon{
+		width: 48px;
+		height: 48px;
+		margin:0 auto;
+		display:block;
+		background-image: url(~'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#616161" viewBox="0 0 48 48"><path d="M38.71 20.07C37.35 13.19 31.28 8 24 8c-5.78 0-10.79 3.28-13.3 8.07C4.69 16.72 0 21.81 0 28c0 6.63 5.37 12 12 12h26c5.52 0 10-4.48 10-10 0-5.28-4.11-9.56-9.29-9.93zM28 26v8h-8v-8h-6l10-10 10 10h-6z"/></svg>');
+	}
+	.zlf-cloud-icon.done{
+		background-image: url(~'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#616161" viewBox="0 0 48 48"><path d="M38.71 20.07C37.35 13.19 31.28 8 24 8c-5.78 0-10.79 3.28-13.3 8.07C4.69 16.72 0 21.81 0 28c0 6.63 5.37 12 12 12h26c5.52 0 10-4.48 10-10 0-5.28-4.11-9.56-9.29-9.93zM20 34l-7-7 2.83-2.83L20 28.34l10.35-10.35 2.83 2.83L20 34z"/></svg>');
+	}
+	.zlf-cloud-icon.uploading{
+		display:none;
+	}
+}
+
+
+#outline {
+  stroke-dasharray: 2.42777px, 242.77666px;
+  stroke-dashoffset: 0;
+  -webkit-animation: anim 1.6s linear infinite;
+          animation: anim 1.6s linear infinite;
+}
+
+@-webkit-keyframes anim {
+  12.5% {
+    stroke-dasharray: 33.98873px, 242.77666px;
+    stroke-dashoffset: -26.70543px;
+  }
+  43.75% {
+    stroke-dasharray: 84.97183px, 242.77666px;
+    stroke-dashoffset: -84.97183px;
+  }
+  100% {
+    stroke-dasharray: 2.42777px, 242.77666px;
+    stroke-dashoffset: -240.34889px;
+  }
+}
+
+@keyframes anim {
+  12.5% {
+    stroke-dasharray: 33.98873px, 242.77666px;
+    stroke-dashoffset: -26.70543px;
+  }
+  43.75% {
+    stroke-dasharray: 84.97183px, 242.77666px;
+    stroke-dashoffset: -84.97183px;
+  }
+  100% {
+    stroke-dasharray: 2.42777px, 242.77666px;
+    stroke-dashoffset: -240.34889px;
+  }
+}
+
+// zl-fileupload input file
+.zlf-file-input{
+	width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+.zlf-file-input + label{
+	cursor: pointer;
+	color:#616161;
+}
+
+// zl-fileupload file item
+.zlf-items-container{
+	height: 160px;
+	overflow-y: auto;
+}
+.zlf-item-container{
+	height: 70px;
+	display:block;
+}
+.zlf-file-item {
+	position: relative;
+	color: #F4F4F4;
+	float: left;
+	width: 20%;
+	height: 70px;
+}
+.zlf-file-item::before {
+	position: absolute;
+	width: 21px;
+	height: 25px;
+	left: 0;
+	top: -7px;
+	content: '';
+	border: 2px solid #F4F4F4;
+	margin: 25px 0px 0px 25px;
+}
+.zlf-file-item::after {
+  content: 'file';
+	content: attr(filetype);
+  left: -3px;
+  width: 30px;
+  text-align: center;
+  line-height: 1.1;
+  position: absolute;
+  background-color: #F4F4F4;
+  color: #616161;
+  font-size: 8px;
+  text-transform: uppercase;
+  top: 6px;
+  font-weight: 700;
+	margin: 25px 0px 0px 25px;
+	box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+
+}
+.zlf-file-item .file-corner {
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 8px 0 0 8px;
+	border-color: #616161 transparent transparent #F4F4F4;
+	position: absolute;
+	top: -7px;
+	left: 17px;
+	margin: 25px 0px 0px 25px;
+}
+.zlf-content-item{
+	float:left;
+	font-weight: 700;
+	padding: 15px 0px 15px 0px;
+  width: 60%;
+	.progress-state{
+		margin-left: 15px;
+		font-weight: 500;
+		font-size: 0.8rem;
+	}
+}
+
+
+.zlf-item-btn-container{
+	display: block;
+  padding: 20px;
+  float: left;
+  position: relative;
+  width: 10%;
+}
+.zlf-btn-upload{
+  position:absolute;
+	padding: 6px 9px;
+  border-radius:100%;
+	cursor: pointer;
+  text-align:center;
+  color:#F4F4F4;
+	border:none;
+	box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+	&.zlf-btn-cancel{
+		background-color:#F44336;
+		&:before{
+	    content:'\2715';
+		}
+	}
+	&.zlf-btn-retry{
+		background-color:#29B6F6;
+		&:before{
+	    content:'\21BB';
+		}
+	}
+	&.zlf-btn-success{
+		background-color:#9CCC65;
+		&:before{
+	    content:'\2714';
+		}
+	}
+}
+
+
+.zlf-progress-average{
+	position:relative;
+	height:30px;
+	width:100%;
+	font-size: 1.3rem;
+	color:#fafafa;
+	height: 5px;
+	margin-top:-5px;
+	.zlf-progress-bar{
+		position: absolute;
+		bottom:0px;
+		left:0px;
+		height: 5px;
+		background-color:#29B6F6;
+		margin:0px;
+		width:100%;
+	}
+}
