@@ -116,7 +116,6 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
           angular.forEach($scope.updateUploadView, function (element, key) {
             // allow to hide others views that aren't needed & show the message
             if (element == state) {
-              console.log(state);
 
               _.defer(function () {
                 element.inview = true;
@@ -181,7 +180,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         zlUploadService.startingInview($scope.updateUploadView.starting, attrs.zlfDragndrop, $scope.updateInView);
 
         // set file url
-        zlUploadService.setUrl(attrs.to);
+        zlUploadService.setUrl(attrs.zlfTo);
 
         /*************************************
         *           FILE UPLOAD BIND         *
@@ -498,7 +497,6 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       progressContainer.empty();
       // for each file start an upload instance
       angular.forEach(arrayUpload, function (value, key) {
-        console.log(key);
         // bind to scope
         var valueProp = 'value' + key;
 
@@ -669,7 +667,6 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
       uploadFile(value, getFilesInformations(index).request).then(function (done) {
         //getFilesInformations(index).progressdirective.remove();
-        console.log(getFilesInformations(index).progressdirective);
       }, function (error) {
         console.log(error);
       }, function (e) {
@@ -728,8 +725,6 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
       //var xhr = $rootScope.filesInformations[index].request;
       var deferred = $q.defer();
-      console.log('start upload file');
-
       //var xhr = createCORSRequest(xhrGetter,'POST', vm.url);
 
       xhr.upload.onprogress = function (e) {
@@ -741,7 +736,6 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       };
       xhr.onload = function () {
         var text = xhr.responseText;
-        console.log(text);
       };
 
       xhr.upload.onerror = function (e) {
@@ -761,6 +755,10 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       if (!xhr) {
         alert('CORS not supported');
         return;
+      }
+      if (vm.headers) {
+
+        for (var i in vm.headers) xhr.setRequestHeader(i, vm.headers[i]);
       }
       xhr.send(data);
       return deferred.promise;
@@ -818,6 +816,17 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       return vm.url;
     };
 
+    /**
+     * @ngdoc service
+     * @name zlUploadService#setHeader
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @description Setter of the upload headers
+     * @param headers Object
+     */
+    function setHeader(headers) {
+      vm.headers = headers;
+    }
+
     _.assign(vm, {
       emitUploadFile: emitUploadFile,
       readyInview: readyInview,
@@ -830,7 +839,8 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       setFiles: setFiles,
       getAverageProgress: getAverageProgress,
       setUrl: setUrl,
-      uploadCancel: uploadCancel
+      uploadCancel: uploadCancel,
+      setHeader: setHeader
     });
   }
 })();

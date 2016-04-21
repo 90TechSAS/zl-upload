@@ -104,7 +104,6 @@
             angular.forEach($scope.updateUploadView, function(element, key) {
                   // allow to hide others views that aren't needed & show the message
                   if (element == state) {
-                    console.log(state);
 
                     _.defer(function(){
                       element.inview = true;
@@ -171,7 +170,7 @@
           zlUploadService.startingInview($scope.updateUploadView.starting,attrs.zlfDragndrop,$scope.updateInView);
 
           // set file url
-          zlUploadService.setUrl(attrs.to);
+          zlUploadService.setUrl(attrs.zlfTo);
 
 
           /*************************************
