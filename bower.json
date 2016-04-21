@@ -1,14 +1,21 @@
 {
   "name": "zl-upload",
   "description": "Lightweight Angularjs directive to upload files",
-  "main": "app.js",
+  "main": ["src/app/app.js", "src/assets/css/style.min.css"],
   "authors": [
     "Renaud ROHLINGER"
   ],
   "license": "ISC",
   "homepage": "https://github.com/90TechSAS/zl-upload",
   "moduleType": [],
-  "private": true,
+  "private": false,
+  "keywords": [
+    "upload",
+    "angular",
+    "angularjs",
+    "lightweight",
+    "files"
+  ],
   "ignore": [
     "**/.*",
     "node_modules"
