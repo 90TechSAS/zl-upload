@@ -1,7 +1,7 @@
 {
   "name": "zl-upload",
   "description": "Lightweight Angularjs directive to upload files",
-  "main": ["src/app/app.js", "src/assets/css/style.min.css"],
+  "main": ["build/app.js", "src/assets/css/style.min.css"],
   "authors": [
     "Renaud ROHLINGER"
   ],
