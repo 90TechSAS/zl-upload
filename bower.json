@@ -5,7 +5,7 @@
   "authors": [
     "Renaud ROHLINGER"
   ],
-  "license": "ISC",
+  "license": "MIT",
   "homepage": "https://github.com/90TechSAS/zl-upload",
   "moduleType": [],
   "private": false,
@@ -16,6 +16,10 @@
     "lightweight",
     "files"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/90TechSAS/zl-upload.git"
+  },
   "ignore": [
     "**/.*",
     "node_modules"
