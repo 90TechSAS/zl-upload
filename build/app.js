@@ -746,6 +746,10 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
 
       var data = new FormData();
 
+      if (vm.formData) {
+        data.append(Object.keys(vm.formData)[0], vm.formData[Object.keys(vm.formData)[0]]);
+      }
+
       if (data) {
         data.append("files", files);
       }
@@ -827,6 +831,17 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       vm.headers = headers;
     }
 
+    /**
+     * @ngdoc service
+     * @name zlUploadService#setFormData
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @description Setter od the upload formData
+     * @param formData Object
+     */
+    function setFormData(formData) {
+      vm.formData = formData;
+    }
+
     _.assign(vm, {
       emitUploadFile: emitUploadFile,
       readyInview: readyInview,
@@ -840,7 +855,8 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       getAverageProgress: getAverageProgress,
       setUrl: setUrl,
       uploadCancel: uploadCancel,
-      setHeader: setHeader
+      setHeader: setHeader,
+      setFormData: setFormData
     });
   }
 })();
