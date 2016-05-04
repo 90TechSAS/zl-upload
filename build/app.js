@@ -52,9 +52,8 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         updateUploadView: '@',
         zlfCustomSubContainer: '@'
       },
-      template: '<div class="zlf-container"><div class="zlf-sub-container {{zlfDragndrop}} {{zlfCustomSubContainer}}">                    <span class="zlf-cloud-icon" ng-class="{\'done\' : updateUploadView.done.inview,\'uploading\' : updateUploadView.uploading.inview }" ng-show="!updateUploadView.starting.inview"></span>                    <zlf-file-input-el ng-show="updateUploadView.starting.inview"></zlf-file-input-el><svg ng-show="updateUploadView.uploading.inview" height="80px" viewBox="0 0 187.3 93.7" preserveAspectRatio="xMidYMid meet">\n  <path stroke="#616161" id="outline" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10"\n        d="M93.9,46.4c9.3,9.5,13.8,17.9,23.5,17.9s17.5-7.8,17.5-17.5s-7.8-17.6-17.5-17.5c-9.7,0.1-13.3,7.2-22.1,17.1 \t\t\t\tc-8.9,8.8-15.7,17.9-25.4,17.9s-17.5-7.8-17.5-17.5s7.8-17.5,17.5-17.5S86.2,38.6,93.9,46.4z" />\n  <path id="outline-bg" opacity="0.09" fill="none" stroke="#ededed" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10"\n        d="\t\t\t\tM93.9,46.4c9.3,9.5,13.8,17.9,23.5,17.9s17.5-7.8,17.5-17.5s-7.8-17.6-17.5-17.5c-9.7,0.1-13.3,7.2-22.1,17.1 \t\t\t\tc-8.9,8.8-15.7,17.9-25.4,17.9s-17.5-7.8-17.5-17.5s7.8-17.5,17.5-17.5S86.2,38.6,93.9,46.4z" />\n\t\t\t\t</svg>{{uploadListenerText}}</div>                    <zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container>                    <div class="zlf-items-container" ng-show="updateUploadView.uploading.inview">                    </div><zl-progress-average ng-show="updateUploadView.uploading.inview"></zl-progress-average>                    </div>',
-      link: function link($scope, element, attrs, controller) {
-
+      template: '<div class="zlf-upload zlf-container" ng-class="{\'ready\' : updateUploadView.ready.inview}" ><div class="zlf-sub-container {{zlfDragndrop}} {{zlfCustomSubContainer}}">                    <span class="zlf-cloud-icon" ng-class="{\'done\' : updateUploadView.done.inview,\'uploading\' : updateUploadView.uploading.inview }" ng-show="!updateUploadView.starting.inview"></span>                    <zlf-file-input-el ng-show="updateUploadView.starting.inview"></zlf-file-input-el><div ng-show="updateUploadView.uploading.inview">chargement</div>{{uploadListenerText}}</div>                    <zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container>                    <div class="zlf-items-container" ng-show="updateUploadView.uploading.inview">                    </div><zl-progress-average ng-show="updateUploadView.uploading.inview"></zl-progress-average>                    </div><div ng-transclude class="transcluded-content"></div>',
+      link: function link($scope, element, attrs, controller, transclude) {
         /********************************************
         *           DOM MANAGEMENT & PARAMS         *
         ********************************************/
@@ -167,7 +166,8 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         }
 
         if (attrs.zlfMaxFiles == undefined) {
-          $scope.zlfMaxFiles = 1;
+          //$scope.zlfMaxFiles = 1;
+          multiple = 'multiple';
           zlFileInputText = 'UPLOAD FILE';
         } else {
           multiple = 'multiple';
