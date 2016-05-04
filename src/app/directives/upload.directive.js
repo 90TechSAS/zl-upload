@@ -26,7 +26,8 @@
           zlfMaxSizeMb : '@',
           zlfAccept : '@',
           updateUploadView : '@',
-          zlfCustomSubContainer : '@'
+          zlfCustomSubContainer : '@',
+          uploadText: '@'
         },
         template : `<div class="zlf-upload zlf-container" ng-class="{'ready' : updateUploadView.ready.inview}" ><div class="zlf-sub-container {{zlfDragndrop}} {{zlfCustomSubContainer}}">\
                     <span class="zlf-cloud-icon" ng-class="{'done' : updateUploadView.done.inview,'uploading' : updateUploadView.uploading.inview }" ng-show="!updateUploadView.starting.inview"></span>\
@@ -159,6 +160,9 @@
             zlFileInputText = 'UPLOAD FILES';
           }
 
+          if ($scope.uploadText) {
+            zlFileInputText = $scope.uploadText
+          }
           element.find('zlf-file-input-el').append($compile(`<input class="zlf-file-input" id="file" type="file" accept="${accept}" ${multiple}/><label for="file"><strong><span class="zlf-cloud-icon"></span>${zlFileInputText}</strong></label>`)($scope));
 
           // method called to update the view on the state starting

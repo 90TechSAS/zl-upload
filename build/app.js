@@ -50,7 +50,8 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
         zlfMaxSizeMb: '@',
         zlfAccept: '@',
         updateUploadView: '@',
-        zlfCustomSubContainer: '@'
+        zlfCustomSubContainer: '@',
+        uploadText: '@'
       },
       template: '<div class="zlf-upload zlf-container" ng-class="{\'ready\' : updateUploadView.ready.inview}" ><div class="zlf-sub-container {{zlfDragndrop}} {{zlfCustomSubContainer}}">                    <span class="zlf-cloud-icon" ng-class="{\'done\' : updateUploadView.done.inview,\'uploading\' : updateUploadView.uploading.inview }" ng-show="!updateUploadView.starting.inview"></span>                    <zlf-file-input-el ng-show="updateUploadView.starting.inview"></zlf-file-input-el><div ng-show="updateUploadView.uploading.inview">chargement</div>{{uploadListenerText}}</div>                    <zl-submit-container ng-show="updateUploadView.ready.inview"></zl-submit-container>                    <div class="zlf-items-container" ng-show="updateUploadView.uploading.inview">                    </div><zl-progress-average ng-show="updateUploadView.uploading.inview"></zl-progress-average>                    </div><div ng-transclude class="transcluded-content"></div>',
       link: function link($scope, element, attrs, controller, transclude) {
@@ -174,6 +175,9 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
           zlFileInputText = 'UPLOAD FILES';
         }
 
+        if ($scope.uploadText) {
+          zlFileInputText = $scope.uploadText;
+        }
         element.find('zlf-file-input-el').append($compile('<input class="zlf-file-input" id="file" type="file" accept="' + accept + '" ' + multiple + '/><label for="file"><strong><span class="zlf-cloud-icon"></span>' + zlFileInputText + '</strong></label>')($scope));
 
         // method called to update the view on the state starting
@@ -666,6 +670,7 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       var sizes = ['Bytes', 'Kb', 'Mb', 'Gb'];
 
       uploadFile(value, getFilesInformations(index).request).then(function (done) {
+        vm.uploadFinished(done);
         //getFilesInformations(index).progressdirective.remove();
       }, function (error) {
         console.log(error);
@@ -734,8 +739,9 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
           }
         }
       };
-      xhr.onload = function () {
+      xhr.onload = function (done) {
         var text = xhr.responseText;
+        deferred.resolve(JSON.parse(xhr.responseText));
       };
 
       xhr.upload.onerror = function (e) {
@@ -835,11 +841,22 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
      * @ngdoc service
      * @name zlUploadService#setFormData
      * @methodOf 90Tech.zlUpload:zlUploadService
-     * @description Setter od the upload formData
+     * @description Setter of the upload formData
      * @param formData Object
      */
     function setFormData(formData) {
       vm.formData = formData;
+    }
+
+    /**
+     * @ngdoc service
+     * @name zlUploadService#uploadFinished
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @description Handle the data after upload is finished, Rewrite this to handle datas your way
+     * @param data Array(Object)
+     */
+    function uploadFinished(data) {
+      console.log(data);
     }
 
     _.assign(vm, {
@@ -856,7 +873,8 @@ var _directivesUploadDirective2 = _interopRequireDefault(_directivesUploadDirect
       setUrl: setUrl,
       uploadCancel: uploadCancel,
       setHeader: setHeader,
-      setFormData: setFormData
+      setFormData: setFormData,
+      uploadFinished: uploadFinished
     });
   }
 })();

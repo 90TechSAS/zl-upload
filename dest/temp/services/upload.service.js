@@ -214,6 +214,7 @@
       var sizes = ['Bytes', 'Kb', 'Mb', 'Gb'];
 
       uploadFile(value, getFilesInformations(index).request).then(function (done) {
+        vm.uploadFinished(done);
         //getFilesInformations(index).progressdirective.remove();
       }, function (error) {
         console.log(error);
@@ -282,8 +283,9 @@
           }
         }
       };
-      xhr.onload = function () {
+      xhr.onload = function (done) {
         var text = xhr.responseText;
+        deferred.resolve(JSON.parse(xhr.responseText));
       };
 
       xhr.upload.onerror = function (e) {
@@ -383,11 +385,22 @@
      * @ngdoc service
      * @name zlUploadService#setFormData
      * @methodOf 90Tech.zlUpload:zlUploadService
-     * @description Setter od the upload formData
+     * @description Setter of the upload formData
      * @param formData Object
      */
     function setFormData(formData) {
       vm.formData = formData;
+    }
+
+    /**
+     * @ngdoc service
+     * @name zlUploadService#uploadFinished
+     * @methodOf 90Tech.zlUpload:zlUploadService
+     * @description Handle the data after upload is finished, Rewrite this to handle datas your way
+     * @param data Array(Object)
+     */
+    function uploadFinished(data) {
+      console.log(data);
     }
 
     _.assign(vm, {
@@ -404,7 +417,8 @@
       setUrl: setUrl,
       uploadCancel: uploadCancel,
       setHeader: setHeader,
-      setFormData: setFormData
+      setFormData: setFormData,
+      uploadFinished: uploadFinished
     });
   }
 })();
